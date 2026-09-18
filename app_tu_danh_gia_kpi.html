@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>App Tự đánh giá KPI cán bộ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F4EE;
+  --paper-2:#EFEBE0;
+  --ink:#1C2430;
+  --ink-soft:#4A5560;
+  --red:#A32638;
+  --red-deep:#7C1B29;
+  --gold:#A9832F;
+  --gold-soft:#E7DAB4;
+  --line:#DAD3C1;
+  --line-soft:#E9E4D6;
+  --good:#2F6B4F;
+  --warn:#B4762A;
+  --bad:#A32638;
+  --card:#FFFFFF;
+  --shadow: 0 1px 2px rgba(28,36,48,.06);
+  --radius: 3px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#181614;
+    --paper-2:#211E1A;
+    --ink:#EDE7DA;
+    --ink-soft:#B7AF9E;
+    --red:#D9536A;
+    --red-deep:#B23A4E;
+    --gold:#D3B166;
+    --gold-soft:#3A331F;
+    --line:#3A362E;
+    --line-soft:#2A2721;
+    --good:#63B491;
+    --warn:#D9A356;
+    --bad:#D9536A;
+    --card:#201D19;
+    --shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#181614; --paper-2:#211E1A; --ink:#EDE7DA; --ink-soft:#B7AF9E;
+  --red:#D9536A; --red-deep:#B23A4E; --gold:#D3B166; --gold-soft:#3A331F;
+  --line:#3A362E; --line-soft:#2A2721; --good:#63B491; --warn:#D9A356; --bad:#D9536A;
+  --card:#201D19; --shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:14px; line-height:1.55;
+}
+h1,h2,h3{ font-family:'Noto Serif',Georgia,serif; font-weight:600; color:var(--ink); margin:0; }
+.wrap{ max-width:1180px; margin:0 auto; padding:0 20px 80px; }
+
+/* ===== Letterhead ===== */
+.letterhead{
+  display:flex; justify-content:space-between; gap:24px;
+  padding:22px 20px 16px; border-bottom:2px solid var(--red);
+  flex-wrap:wrap;
+}
+.letterhead .side{ flex:1; min-width:220px; text-align:center; font-size:12.5px; color:var(--ink-soft); }
+.letterhead .side b{ display:block; color:var(--ink); font-size:13.5px; margin-bottom:2px; }
+.letterhead .side .rule{ width:46px; height:2px; background:var(--gold); margin:6px auto 0; }
+.pagehead{ text-align:center; padding:18px 20px 6px; }
+.pagehead h1{ font-size:22px; letter-spacing:.2px; }
+.pagehead .sub{ color:var(--red-deep); font-family:'Noto Serif',serif; font-weight:600; margin-top:4px; font-size:15px;}
+
+/* ===== Sticky score bar ===== */
+.scorebar{
+  position:sticky; top:0; z-index:30; background:var(--card);
+  border-bottom:1px solid var(--line); box-shadow:var(--shadow);
+}
+.scorebar-in{
+  max-width:1180px; margin:0 auto; padding:10px 20px;
+  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+}
+.score-num{ font-family:'Noto Serif',serif; font-size:30px; font-weight:700; color:var(--red-deep); line-height:1; }
+.score-num small{ font-family:'Inter',sans-serif; font-size:13px; font-weight:500; color:var(--ink-soft); }
+.score-badge{
+  padding:6px 14px; border-radius:999px; font-weight:600; font-size:13px;
+  border:1px solid currentColor;
+}
+.score-mini{ display:flex; gap:18px; margin-left:auto; flex-wrap:wrap; }
+.score-mini div{ font-size:12px; color:var(--ink-soft); }
+.score-mini b{ display:block; color:var(--ink); font-size:15px; font-family:'Noto Serif',serif;}
+.btnrow{ display:flex; gap:8px; }
+button{ font-family:'Inter',sans-serif; cursor:pointer; }
+.btn{
+  border:1px solid var(--line); background:var(--card); color:var(--ink);
+  padding:7px 13px; border-radius:var(--radius); font-size:12.5px; font-weight:600;
+}
+.btn:hover{ border-color:var(--ink-soft); }
+.btn-primary{ background:var(--red); border-color:var(--red); color:#fff; }
+.btn-primary:hover{ background:var(--red-deep); border-color:var(--red-deep); }
+.btn-ghost{ background:transparent; border:none; color:var(--ink-soft); text-decoration:underline; padding:4px 6px;}
+
+/* ===== Sections ===== */
+.section{ margin-top:34px; }
+.section-head{ display:flex; align-items:baseline; gap:10px; border-bottom:1px solid var(--line); padding-bottom:8px; margin-bottom:14px; }
+.section-head .roman{ font-family:'Noto Serif',serif; color:#fff; background:var(--red); width:26px;height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex:none;}
+.section-head h2{ font-size:17px; }
+.section-note{ color:var(--ink-soft); font-size:12.5px; margin:-8px 0 14px; }
+
+.card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); }
+
+/* Info grid */
+.info-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; padding:18px; }
+.field label{ display:block; font-size:11.5px; color:var(--ink-soft); margin-bottom:4px; font-weight:600; letter-spacing:.2px;}
+.field input, .field select{
+  width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius);
+  background:var(--paper); color:var(--ink); font-size:13.5px; font-family:inherit;
+}
+.field input:focus, .field select:focus, textarea:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+
+/* Criteria checklist */
+.crit-group{ margin-bottom:6px; }
+.crit-group-title{ font-weight:700; font-size:13.5px; padding:10px 16px; background:var(--paper-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.crit-row{ display:flex; gap:14px; align-items:flex-start; padding:11px 16px; border-bottom:1px solid var(--line-soft); }
+.crit-row:last-child{ border-bottom:none; }
+.crit-text{ flex:1; font-size:13px; color:var(--ink); }
+.crit-text .num{ color:var(--red-deep); font-weight:700; margin-right:6px; }
+.crit-toggle{ display:flex; gap:6px; flex:none; }
+.pill{
+  padding:6px 12px; border-radius:999px; border:1px solid var(--line); font-size:12px; font-weight:600;
+  background:var(--paper); color:var(--ink-soft);
+}
+.pill.on-good{ background:var(--good); border-color:var(--good); color:#fff; }
+.pill.on-bad{ background:var(--bad); border-color:var(--bad); color:#fff; }
+.crit-summary{ padding:12px 16px; font-size:12.5px; color:var(--ink-soft); background:var(--paper-2); border-top:1px solid var(--line);}
+.crit-summary b{ color:var(--ink); }
+
+/* Group headers with weight input */
+.group-top{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:var(--paper-2); border-bottom:1px solid var(--line); flex-wrap:wrap; gap:10px;}
+.group-top h3{ font-size:14.5px; }
+.weight-edit{ display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--ink-soft); }
+.weight-edit input{ width:56px; padding:5px 6px; border:1px solid var(--line); border-radius:var(--radius); text-align:center; background:var(--card); color:var(--ink); font-weight:700; }
+
+/* Task table */
+.tablewrap{ overflow-x:auto; }
+table.tasks{ border-collapse:collapse; width:100%; min-width:1080px; font-size:12.5px; }
+table.tasks th{
+  background:var(--paper-2); color:var(--ink-soft); font-weight:700; text-align:left;
+  padding:8px 8px; border-bottom:1px solid var(--line); white-space:nowrap; font-size:11px; letter-spacing:.2px;
+}
+table.tasks td{ padding:7px 8px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
+table.tasks tr:hover td{ background:var(--paper-2); }
+table.tasks input[type=text], table.tasks input[type=number], table.tasks select, table.tasks textarea{
+  width:100%; padding:5px 6px; border:1px solid var(--line); border-radius:2px; background:var(--paper); color:var(--ink); font-size:12.3px; font-family:inherit;
+}
+table.tasks textarea{ resize:vertical; min-height:34px; }
+.col-name{ min-width:210px; }
+.col-num{ width:64px; }
+.col-computed{ font-weight:700; color:var(--red-deep); text-align:right; white-space:nowrap; }
+.col-computed.small{ font-weight:600; color:var(--ink-soft); }
+.detail-toggle{ background:none; border:none; color:var(--gold); font-size:11px; text-decoration:underline; padding:2px 0; cursor:pointer; }
+.detail-row td{ background:var(--paper-2); padding:10px 8px 14px; }
+.detail-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.detail-grid .field label{ font-size:10.5px; }
+.rm-btn{ background:none; border:none; color:var(--bad); font-size:16px; line-height:1; cursor:pointer; padding:4px; }
+.group-sum{ display:flex; gap:26px; flex-wrap:wrap; padding:14px 16px; background:var(--paper-2); border-top:1px solid var(--line); }
+.group-sum div{ font-size:12px; color:var(--ink-soft); }
+.group-sum b{ display:block; color:var(--ink); font-size:16px; font-family:'Noto Serif',serif; }
+.addrow{ padding:12px 16px; border-top:1px dashed var(--line); }
+
+/* Final */
+.final-card{ padding:22px; text-align:center; }
+.final-total{ font-family:'Noto Serif',serif; font-size:52px; font-weight:700; color:var(--red-deep); line-height:1; }
+.final-total small{ font-family:'Inter',sans-serif; font-size:16px; color:var(--ink-soft); font-weight:500; }
+.final-badge{ display:inline-block; margin-top:10px; padding:8px 20px; border-radius:999px; font-weight:700; font-size:14.5px; border:1.5px solid currentColor; }
+.final-breakdown{ display:flex; justify-content:center; gap:40px; margin-top:18px; flex-wrap:wrap; }
+.final-breakdown div{ font-size:12.5px; color:var(--ink-soft); }
+.final-breakdown b{ display:block; font-size:19px; color:var(--ink); font-family:'Noto Serif',serif; }
+.final-note{ margin-top:16px; font-size:12px; color:var(--ink-soft); max-width:560px; margin-left:auto; margin-right:auto; }
+
+/* Reference / legend */
+details.ref{ margin-top:10px; }
+details.ref summary{ cursor:pointer; font-weight:600; color:var(--gold); font-size:12.5px; padding:8px 0; }
+.ref-table{ width:100%; border-collapse:collapse; font-size:12px; margin-bottom:14px; }
+.ref-table th, .ref-table td{ border:1px solid var(--line); padding:6px 8px; text-align:left; }
+.ref-table th{ background:var(--paper-2); }
+
+footer{ text-align:center; color:var(--ink-soft); font-size:11.5px; padding:26px 0 6px; }
+
+@media print{
+  .scorebar, .btn, .rm-btn, .addrow, .detail-toggle, .btnrow{ display:none !important; }
+  body{ background:#fff; }
+  .card{ box-shadow:none; border:1px solid #999; }
+}
+</style>
+</head>
+<body>
+
+<div class="pagehead">
+  <div class="letterhead">
+    <div class="side"><b id="lh-coquan">CƠ QUAN ỦY BAN MTTQ VIỆT NAM</b>phường<span id="lh-donvi2"> Bình Thuận</span><div class="rule"></div></div>
+    <div class="side"><b>ĐẢNG CỘNG SẢN VIỆT NAM</b><span id="lh-date">Tuyên Quang, quý III năm 2026</span><div class="rule"></div></div>
+  </div>
+  <h1>BẢN TỰ ĐÁNH GIÁ, XẾP LOẠI CỦA CÁ NHÂN</h1>
+  <div class="sub" id="lh-quy">Quý III, Năm 2026</div>
+</div>
+
+<div class="scorebar">
+  <div class="scorebar-in">
+    <div class="score-num"><span id="bar-total">0</span><small> / 100 điểm</small></div>
+    <div id="bar-badge" class="score-badge">—</div>
+    <div class="score-mini">
+      <div>Nhóm A (KPI×70)<b id="bar-a">0</b></div>
+      <div>Nhóm B (KPI×30)<b id="bar-b">0</b></div>
+      <div>Tiêu chí "Không đảm bảo"<b id="bar-crit">0/17</b></div>
+    </div>
+    <div class="btnrow">
+      <button class="btn" onclick="window.print()">In</button>
+      <button class="btn" id="resetBtn">Làm lại từ đầu</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ THONG TIN ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman">i</span><h2>Thông tin cá nhân</h2></div>
+    <div class="card info-grid" id="infoGrid"></div>
+  </div>
+
+  <!-- ============ PHAN I ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman">1</span><h2>Nhóm tiêu chí chung</h2></div>
+    <div class="section-note">Đánh dấu <b>Đảm bảo</b> / <b>Không đảm bảo</b> cho từng tiêu chí. Phần này không cộng vào điểm số, nhưng số tiêu chí "Không đảm bảo" quyết định mức xếp loại tối đa có thể đạt được.</div>
+    <div class="card" id="critCard"></div>
+  </div>
+
+  <!-- ============ NHAP TU BAO CAO (AI) ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman" style="background:var(--gold);font-size:10px;">AI</span><h2>Nhập nhanh từ báo cáo</h2></div>
+    <div class="section-note">Dán nội dung báo cáo công tác (hoặc tải file .txt) — AI sẽ tách thành từng nhiệm vụ và điền gợi ý dữ liệu để bạn kiểm tra, chỉnh sửa rồi mới thêm vào bảng bên dưới. Không có gì được thêm vào bảng cho đến khi bạn bấm xác nhận.</div>
+    <div class="card" style="padding:16px 18px;">
+      <textarea id="reportText" rows="8" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--paper);color:var(--ink);font-family:inherit;font-size:13px;" placeholder="Dán toàn bộ nội dung báo cáo công tác quý tại đây..."></textarea>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap;">
+        <input type="file" id="reportFile" accept=".txt" style="font-size:12.5px;">
+        <button class="btn btn-primary" id="analyzeBtn">Phân tích bằng AI</button>
+        <span id="aiStatus" style="font-size:12.5px;color:var(--ink-soft);"></span>
+      </div>
+      <div id="aiPreviewWrap" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- ============ DONG BO GITHUB ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman" style="background:var(--gold);font-size:10px;">GH</span><h2>Đồng bộ dữ liệu với GitHub</h2></div>
+    <div class="section-note">Lưu toàn bộ dữ liệu bản tự đánh giá này thành 1 file JSON trong một GitHub repository, để có thể mở lại từ máy/trình duyệt khác. Cần một GitHub Personal Access Token — xem hướng dẫn tạo token bên dưới. <b>Token chỉ được lưu trong trình duyệt của bạn (localStorage) và chỉ dùng để gọi thẳng tới api.github.com — không gửi cho bất kỳ máy chủ nào khác.</b></div>
+    <div class="card" style="padding:16px 18px;">
+      <div class="info-grid" style="padding:0;" id="ghGrid"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center;">
+        <button class="btn" id="ghTest">Kiểm tra kết nối</button>
+        <button class="btn btn-primary" id="ghSave">Lưu lên GitHub</button>
+        <button class="btn" id="ghLoad">Tải từ GitHub</button>
+        <span id="ghStatus" style="font-size:12.5px;color:var(--ink-soft);"></span>
+      </div>
+      <details class="ref" style="margin-top:14px;">
+        <summary>Hướng dẫn tạo Personal Access Token (PAT) trên GitHub</summary>
+        <ol style="font-size:12.5px;color:var(--ink-soft);line-height:1.85;padding-left:18px;margin:8px 0;">
+          <li>Đăng nhập GitHub → bấm ảnh đại diện góc trên phải → <b>Settings</b>.</li>
+          <li>Cuộn xuống cuối menu bên trái → <b>Developer settings</b>.</li>
+          <li>Chọn <b>Personal access tokens → Fine-grained tokens → Generate new token</b>.</li>
+          <li>Đặt tên token, chọn <b>Resource owner</b> là tài khoản/tổ chức chứa repository bạn sẽ lưu dữ liệu.</li>
+          <li>Ở mục <b>Repository access</b>, chọn <b>Only select repositories</b> rồi chọn đúng repository đó (không cấp quyền cho repo khác).</li>
+          <li>Ở mục <b>Permissions → Repository permissions</b>, tìm dòng <b>Contents</b> và đổi thành <b>Read and write</b>.</li>
+          <li>Bấm <b>Generate token</b>, sao chép chuỗi token hiện ra (chỉ hiện đúng 1 lần) và dán vào ô "Token" bên dưới.</li>
+          <li>Điền tiếp <b>Chủ sở hữu/tổ chức</b>, <b>Tên repository</b>, <b>Nhánh</b> (thường là <code>main</code>) và <b>Đường dẫn file</b> (ví dụ <code>data/kpi-nguyen-van-duc.json</code>).</li>
+          <li>Bấm "Kiểm tra kết nối" để xác nhận token hoạt động, rồi "Lưu lên GitHub" để lưu, hoặc "Tải từ GitHub" để lấy lại dữ liệu đã lưu trước đó (sẽ ghi đè dữ liệu hiện tại trong app).</li>
+        </ol>
+        <div style="font-size:11.5px;color:var(--bad);">Lưu ý bảo mật: không chia sẻ token này cho người khác, không dán token trên máy tính công cộng/dùng chung, và nên đặt ngày hết hạn ngắn cho token khi tạo.</div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ============ PHAN II ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman">2</span><h2>Nhóm kết quả thực hiện nhiệm vụ</h2></div>
+    <div class="section-note">Điểm KPI mỗi việc = (Điểm A + Điểm B + Điểm C) / 3. Điểm KPI nhóm = Σ(A+B+C của cả nhóm) / 3 / Σ điểm quy đổi (J) của nhóm. Điểm thực hiện nhóm = KPI nhóm × trọng số nhóm.</div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <div class="group-top">
+        <h3>A — Nhóm nhiệm vụ thường xuyên</h3>
+        <div class="weight-edit">Trọng số nhóm A: <input type="number" id="wA" min="0" max="100" step="1"> điểm</div>
+      </div>
+      <div class="tablewrap"><table class="tasks" id="tblA"></table></div>
+      <div class="addrow"><button class="btn" id="addA">+ Thêm nhiệm vụ (Nhóm A)</button></div>
+      <div class="group-sum" id="sumA"></div>
+    </div>
+
+    <div class="card">
+      <div class="group-top">
+        <h3>B — Nhóm nhiệm vụ trọng tâm, then chốt</h3>
+        <div class="weight-edit">Trọng số nhóm B: <input type="number" id="wB" min="0" max="100" step="1"> điểm</div>
+      </div>
+      <div class="tablewrap"><table class="tasks" id="tblB"></table></div>
+      <div class="addrow"><button class="btn" id="addB">+ Thêm nhiệm vụ (Nhóm B)</button></div>
+      <div class="group-sum" id="sumB"></div>
+    </div>
+  </div>
+
+  <!-- ============ KET QUA ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman">3</span><h2>Kết quả xếp loại</h2></div>
+    <div class="card final-card">
+      <div class="final-total"><span id="finalTotal">0.00</span><small> / 100 điểm</small></div>
+      <div class="final-badge" id="finalBadge">—</div>
+      <div class="final-breakdown">
+        <div>Điểm TH Nhóm A<b id="fbA">0</b></div>
+        <div>Điểm TH Nhóm B<b id="fbB">0</b></div>
+        <div>Tiêu chí không đảm bảo<b id="fbCrit">0 / 17</b></div>
+      </div>
+      <div class="final-note" id="finalNote"></div>
+    </div>
+  </div>
+
+  <!-- ============ PHU LUC THAM KHAO ============ -->
+  <div class="section">
+    <div class="section-head"><span class="roman">4</span><h2>Phụ lục 1 — bảng hệ số tra cứu</h2></div>
+    <div class="card" style="padding:16px 18px;">
+      <details class="ref" open>
+        <summary>Nhóm độ khó → Hệ số quy đổi</summary>
+        <table class="ref-table"><tr><th>Nhóm</th><th>Hệ số</th><th>Diễn giải</th></tr>
+          <tr><td>N1</td><td>20</td><td>Việc đơn giản, thường lệ, ít sáng tạo</td></tr>
+          <tr><td>N2</td><td>40</td><td>Việc định kỳ, có quy trình sẵn</td></tr>
+          <tr><td>N3</td><td>60</td><td>Việc phức tạp vừa, cần phối hợp nhiều đơn vị</td></tr>
+          <tr><td>N4</td><td>80</td><td>Việc khó, mới, phạm vi rộng, ảnh hưởng lớn</td></tr>
+          <tr><td>N5</td><td>100</td><td>Việc đặc biệt khó, chưa có tiền lệ, tầm chiến lược</td></tr>
+        </table>
+      </details>
+      <details class="ref">
+        <summary>Hệ số chất lượng (N)</summary>
+        <table class="ref-table"><tr><th>Hệ số</th><th>Mức đánh giá</th></tr>
+          <tr><td>1.0</td><td>Hoàn thành, đạt yêu cầu, đúng sản phẩm đầu ra</td></tr>
+          <tr><td>0.75</td><td>Cơ bản đạt, còn một số điểm chưa đầy đủ, hoàn thiện</td></tr>
+          <tr><td>0.5</td><td>Đạt được một phần, còn hạn chế đáng kể về chất lượng</td></tr>
+          <tr><td>0.25</td><td>Chưa đạt, sản phẩm chưa đáp ứng yêu cầu cơ bản</td></tr>
+          <tr><td>0</td><td>Không thực hiện hoặc sản phẩm hoàn toàn không đạt</td></tr>
+        </table>
+      </details>
+      <details class="ref">
+        <summary>Hệ số tiến độ (Q) — theo số ngày chậm</summary>
+        <table class="ref-table"><tr><th>Số ngày chậm</th><th>Hệ số</th></tr>
+          <tr><td>0 (đúng / vượt tiến độ)</td><td>1.00</td></tr>
+          <tr><td>1–10 ngày</td><td>1 − 0.05 × số ngày</td></tr>
+          <tr><td>trên 10 ngày / không hoàn thành</td><td>0</td></tr>
+        </table>
+      </details>
+      <details class="ref">
+        <summary>Xếp loại cuối cùng</summary>
+        <table class="ref-table"><tr><th>Mức xếp loại</th><th>Điều kiện điểm</th><th>Điều kiện tiêu chí chung</th></tr>
+          <tr><td>Hoàn thành xuất sắc</td><td>&gt; 90 điểm</td><td>Tất cả tiêu chí "Đảm bảo"</td></tr>
+          <tr><td>Hoàn thành tốt</td><td>Từ 80 đến dưới 90 điểm</td><td>Không quá 2 tiêu chí "Không đảm bảo"</td></tr>
+          <tr><td>Hoàn thành nhiệm vụ</td><td>Từ 60 đến dưới 80 điểm</td><td>Không quá 4 tiêu chí "Không đảm bảo"</td></tr>
+          <tr><td>Không hoàn thành</td><td>Dưới 60 điểm</td><td>Có từ 5 tiêu chí "Không đảm bảo" trở lên</td></tr>
+        </table>
+        <div style="font-size:11.5px;color:var(--ink-soft);">Nếu số tiêu chí "Không đảm bảo" vượt điều kiện cho phép của mức đang đạt theo điểm, xếp loại tự động hạ xuống mức thấp hơn tương ứng.</div>
+      </details>
+    </div>
+  </div>
+
+  <footer>Dữ liệu được lưu tự động trong trình duyệt của bạn. Dùng mục "Đồng bộ dữ liệu với GitHub" ở trên nếu muốn lưu lên GitHub để dùng lại trên máy/trình duyệt khác. Dùng nút "In" để xuất bản giấy.</footer>
+</div>
+
+<script>
+/* ============================================================
+   DATA MODEL
+   ============================================================ */
+const STORE_KEY = 'kpi-danhgia-v1';
+
+const CRITERIA_DEFAULT = [
+  {sec:'1. Về phẩm chất chính trị, đạo đức, lối sống, thực hiện trách nhiệm nêu gương', items:[
+    "Tuyệt đối trung thành với Đảng, Tổ quốc và Nhân dân; kiên định chủ nghĩa Mác - Lênin, tư tưởng Hồ Chí Minh, mục tiêu độc lập dân tộc và chủ nghĩa xã hội; kiên quyết bảo vệ nền tảng tư tưởng, Cương lĩnh chính trị, đường lối của Đảng.",
+    "Có tinh thần yêu nước sâu sắc, tận tuỵ phục vụ Nhân dân, sâu sát cơ sở; đặt lợi ích của Đảng, quốc gia - dân tộc, Nhân dân, tập thể lên trên lợi ích cá nhân.",
+    "Chấp hành nghiêm chủ trương, đường lối, nghị quyết, chỉ thị, quy định, nguyên tắc tổ chức, kỷ luật của Đảng; chấp hành nghiêm pháp luật của Nhà nước và quy định của cơ quan, đơn vị.",
+    "Có tinh thần tự giác, trách nhiệm cao trong nghiên cứu, học tập chủ nghĩa Mác - Lênin, tư tưởng Hồ Chí Minh, các nghị quyết, chỉ thị của Đảng và các chương trình bồi dưỡng, cập nhật kiến thức mới.",
+    "Có phẩm chất đạo đức, lối sống trong sáng, trung thực, khiêm tốn, chân thành, giản dị; cần, kiệm, liêm, chính, chí công vô tư; không vi phạm Quy định về những điều đảng viên không được làm.",
+    "Không tham vọng quyền lực; không chạy chức, chạy quyền; không tham nhũng, lãng phí, cơ hội, vụ lợi, cục bộ, lợi ích nhóm; không có biểu hiện suy thoái, \"tự diễn biến\", \"tự chuyển hoá\".",
+    "Có uy tín cao, tiêu biểu về phẩm chất đạo đức và phong cách công tác; là trung tâm đoàn kết, thương yêu đồng chí, đồng nghiệp.",
+    "Có tinh thần chủ động, đổi mới sáng tạo; phấn đấu vì mục tiêu phát triển của cơ quan, đơn vị, đóng góp vào mục tiêu chung của đất nước.",
+    "Thực hiện việc kê khai và công khai tài sản, thu nhập theo quy định; báo cáo đầy đủ, trung thực, cung cấp thông tin chính xác, khách quan khi được yêu cầu."
+  ]},
+  {sec:'2. Tư duy đổi mới, chiến lược, khát vọng cống hiến, dám nghĩ, dám làm', items:[
+    "Có tư duy đổi mới, tầm nhìn chiến lược, khả năng lãnh đạo, chỉ đạo thích ứng với sự phát triển của thời đại; phương pháp làm việc khoa học, nhạy bén chính trị.",
+    "Luôn bám sát thực tiễn, có nhiều cách làm hay, sáng tạo, đạt hiệu quả cao trong lãnh đạo, chỉ đạo, tổ chức thực hiện nhiệm vụ.",
+    "Nói đi đôi với làm, dám nghĩ, dám làm, dám chịu trách nhiệm, dám đột phá vì lợi ích chung; có khả năng phân tích, dự báo tình hình.",
+    "Có khát vọng phấn đấu, cống hiến; có khả năng quy tụ và phát huy được sức mạnh của tập thể, cá nhân trong cơ quan, đơn vị."
+  ]},
+  {sec:'3. Về tự phê bình và phê bình, tự soi, tự sửa, khắc phục hạn chế, khuyết điểm', items:[
+    "Chủ động, nghiêm túc thực hiện tự phê bình và phê bình, có tinh thần cầu thị và tiếp thu phản biện, góp ý.",
+    "Có kế hoạch rõ ràng, quyết liệt trong khắc phục hạn chế, khuyết điểm đã được chỉ ra.",
+    "Kết quả khắc phục hoàn thành từ ≥ 80% nội dung, có tiến bộ rõ, được tổ chức đánh giá tốt; không để tái diễn tồn tại.",
+    "Tự soi, tự sửa trên tinh thần trách nhiệm chính trị cao, không né tránh, không đổ lỗi."
+  ]}
+];
+
+function flattenCriteria(def){
+  let out=[]; let n=0;
+  def.forEach(sec=>{ sec.items.forEach(t=>{ n++; out.push({id:'c'+n, text:t, dam:true}); }); });
+  return out;
+}
+
+const HESO_NHOM = {N1:20,N2:40,N3:60,N4:80,N5:100};
+const HESO_CL = [
+  {v:1,    label:'1.0 — Hoàn thành, đúng yêu cầu'},
+  {v:0.75, label:'0.75 — Cơ bản đạt, còn thiếu sót nhỏ'},
+  {v:0.5,  label:'0.5 — Đạt một phần, hạn chế đáng kể'},
+  {v:0.25, label:'0.25 — Chưa đạt yêu cầu cơ bản'},
+  {v:0,    label:'0 — Không thực hiện / không đạt'}
+];
+
+function defaultTask(over){
+  return Object.assign({
+    name:'', canCu:'', sanPham:'', tienDoHan:'', nhom:'N2', heSo:40,
+    E:1, K:1, N:1, chamNgay:0, open:false
+  }, over);
+}
+
+// Prefilled with the finalized Quý III/2026 data (Nguyễn Văn Đức) as a working example
+const GROUP_A_SEED = [
+  defaultTask({name:'Tuyên truyền, phổ biến chủ trương của Đảng, chính sách pháp luật Nhà nước đến cán bộ, hội viên CCB và nhân dân', canCu:'KH số 32/KH-CCB ngày 29/7/2026; Chương trình CT năm 2026', sanPham:'Các CV tuyên truyền NQ ĐH XIV; Chỉ thị 07-CT/TW; Nghị quyết TW3 khóa XIV', tienDoHan:'Hàng tháng (T7,T8,T9)', nhom:'N2', heSo:40, E:3, K:3, N:1, chamNgay:0}),
+  defaultTask({name:'Chỉ đạo 12 chi hội tham gia phong trào thi đua "CCB gương mẫu" gắn xây dựng đô thị văn minh; phong trào giảm nghèo', canCu:'KH số 32/KH-CCB; CT Hội CCB năm 2026', sanPham:'BC tháng 7,8,9/2026; Tin bài, hình ảnh hoạt động', tienDoHan:'Cả quý', nhom:'N2', heSo:35, E:1, K:1, N:1, chamNgay:0}),
+  defaultTask({name:'Xây dựng Kế hoạch công tác Hội và phong trào CCB Quý III/2026 theo nguyên tắc "6 rõ"', canCu:'CV số 240-CV/BXDĐ ngày 23/7/2026 của Ban XD Đảng', sanPham:'KH số 32/KH-CCB ngày 29/7/2026', tienDoHan:'Tháng 7/2026', nhom:'N3', heSo:60, E:1, K:1, N:1, chamNgay:0}),
+  defaultTask({name:'Tổ chức kiện toàn từ 29 chi hội xuống 12 chi hội sau sắp xếp tổ dân phố; chỉ đạo bàn giao hồ sơ, sổ sách, tài chính', canCu:'Đề án sắp xếp TDP phường Bình Thuận; CT Hội năm 2026', sanPham:'12/12 chi hội hoàn thành bàn giao; còn 2 chi hội chậm tiến độ', tienDoHan:'Tháng 7-8/2026', nhom:'N2', heSo:40, E:12, K:12, N:0.75, chamNgay:0}),
+  defaultTask({name:'Tổ chức tập huấn, hướng dẫn nghiệp vụ công tác Hội cho chi hội trưởng, chi hội phó 12 chi hội sau sáp nhập; phát động phong trào CCB quản lý trật tự đô thị', canCu:'KH số 32/KH-CCB', sanPham:'01 Hội nghị tập huấn; KH phong trào quản lý TTĐT', tienDoHan:'Tháng 8/2026', nhom:'N3', heSo:60, E:1, K:1, N:0.75, chamNgay:0}),
+  defaultTask({name:'Ban hành CV và KH tuyên truyền phong trào "Bình dân học vụ số"; NQ57-NQ/TW về KHCN, chuyển đổi số; Đề án 06 trong cán bộ, hội viên CCB', canCu:'NQ57-NQ/TW; CV 253-CV/BXDĐ ngày 05/8/2026; KH số 32/KH-CCB', sanPham:'KH tuyên truyền "Bình dân học vụ số"; CV số tuyên truyền NQ57', tienDoHan:'Tháng 8-9/2026', nhom:'N2', heSo:40, E:2, K:2, N:1, chamNgay:0}),
+  defaultTask({name:'Rà soát, kê khai, thu thập dữ liệu cán bộ, hội viên CCB phục vụ chuyển đổi số quản lý hội viên', canCu:'CV rà soát kê khai dữ liệu HV CCB', sanPham:'Tiếp nhận phiếu thu thập từ chi hội 1,7,8; tổng hợp danh sách HV qua các thời kỳ', tienDoHan:'Tháng 8-9/2026', nhom:'N2', heSo:40, E:12, K:3, N:0, chamNgay:0}),
+  defaultTask({name:'Tổ chức Hội nghị sơ kết công tác Hội 6 tháng đầu năm 2026; chỉ đạo 12/12 chi hội tổ chức sơ kết', canCu:'KH số 32/KH-CCB; CT Hội năm 2026', sanPham:'Biên bản, NQ Hội nghị sơ kết 6 tháng; 12/12 chi hội sơ kết', tienDoHan:'Tháng 7/2026', nhom:'N3', heSo:60, E:1, K:1, N:1, chamNgay:0}),
+  defaultTask({name:'Kết nạp hội viên mới; rà soát, lập hồ sơ đề nghị tặng Kỷ niệm chương CCB Việt Nam năm 2026; rà soát HV qua các thời kỳ kháng chiến', canCu:'Điều lệ Hội CCB; KH số 32/KH-CCB', sanPham:'07 QĐ kết nạp HV mới; Tờ trình + danh sách đề nghị Kỷ niệm chương; Báo cáo HV qua các thời kỳ', tienDoHan:'T7, T8/2026', nhom:'N2', heSo:40, E:3, K:3, N:1, chamNgay:0}),
+  defaultTask({name:'Tham gia Hội nghị tập huấn nghiệp vụ công tác Hội do Hội CCB tỉnh Tuyên Quang tổ chức', canCu:'Giấy mời của Hội CCB tỉnh Tuyên Quang', sanPham:'Tham dự 2 ngày (21-22/8/2026); nội dung triển khai lại tại Hội CCB phường', tienDoHan:'21-22/8/2026', nhom:'N2', heSo:40, E:1, K:1, N:1, chamNgay:0}),
+  defaultTask({name:'Kiểm tra, quản lý 9 Tổ TK&VV; phối hợp NHCSXH sáp nhập từ 9 xuống còn 6 tổ TK&VV; duy trì 204 hộ vay, dư nợ 12.017 triệu đồng, không nợ xấu', canCu:'KH số 32/KH-CCB mục 10; Hợp đồng ủy thác NHCSXH', sanPham:'BC kiểm tra TK&VV; Biên bản sáp nhập 9→6 tổ', tienDoHan:'T7, T9/2026', nhom:'N3', heSo:60, E:4, K:4, N:1, chamNgay:0}),
+  defaultTask({name:'Tổ chức hoạt động nghĩa tình đồng đội nhân 79 năm Ngày TB-LS (27/7): thăm hỏi, tặng quà 5 gia đình chính sách; phủ quân kỳ cho 11 HV từ trần trong quý', canCu:'KH số 32/KH-CCB mục 2; Đạo lý "Uống nước nhớ nguồn"', sanPham:'Thăm tặng 5 hộ; phủ quân kỳ T7:2HV, T8:5HV, T9:4HV', tienDoHan:'Cả quý', nhom:'N3', heSo:60, E:11, K:11, N:1, chamNgay:0}),
+  defaultTask({name:'Triển khai "Chiến dịch 500 ngày đêm tìm kiếm, quy tập và xác định danh tính hài cốt LS": vận động ủng hộ và phối hợp khai quật 01 hài cốt LS', canCu:'Hướng dẫn của cấp trên về Chiến dịch 500 ngày đêm; KH tuyên truyền', sanPham:'Tiếp nhận trên 24 triệu đồng; phối hợp quy tập 01 hài cốt LS tại TDP 8 → NTL Vị Xuyên', tienDoHan:'T7-T9/2026', nhom:'N4', heSo:80, E:1, K:1, N:1, chamNgay:0}),
+  defaultTask({name:'Phối hợp MTTQ, đoàn thể và tổ dân phố 2 tổ chức ra quân vệ sinh môi trường đường Phùng Chí Kiên; duy trì phong trào "Bình Thuận chung tay xử lý rác thải"', canCu:'KH số 32/KH-CCB mục 4; CT phối hợp MTTQ', sanPham:'Ra quân VSMT đường Phùng Chí Kiên; tin bài, hình ảnh cả quý', tienDoHan:'T8-T9/2026', nhom:'N2', heSo:40, E:2, K:2, N:1, chamNgay:0}),
+  defaultTask({name:'Tham gia diễn tập phòng thủ tác chiến phường năm 2026; họp Hội đồng NVQS chuẩn bị rà soát khám sơ tuyển NVQS năm 2027', canCu:'KH diễn tập phòng thủ phường 2026', sanPham:'Tham gia khung diễn tập tác chiến phường; họp Hội đồng NVQS phường', tienDoHan:'T6, T9/2026', nhom:'N3', heSo:60, E:2, K:2, N:1, chamNgay:0}),
+  defaultTask({name:'Xây dựng đề cương, KH giám sát công tác xây dựng lực lượng dân quân, chế độ chính sách (QĐ 142, 62, 49/TTg) đối với Ban CHQS phường', canCu:'KH số 32/KH-CCB mục 8; BC tuần 18-24/7; BC tháng 8/2026', sanPham:'Chưa thực hiện được do thay đổi cơ cấu tổ chức Ban CHQS phường', tienDoHan:'Tháng 8-9/2026', nhom:'N3', heSo:60, E:1, K:0, N:0, chamNgay:99})
+];
+const GROUP_B_SEED = [
+  defaultTask({name:'Kiện toàn tổ chức từ 29 chi hội xuống 12 chi hội; tổ chức 01 Hội nghị tập huấn nghiệp vụ cho 12 chi hội trưởng, phó sau sáp nhập; phát động phong trào CCB quản lý TTĐT, ATGT', canCu:'Đề án sắp xếp TDP phường; CV 240-CV/BXDĐ ngày 23/7/2026; KH số 32/KH-CCB', sanPham:'12/12 chi hội hoàn thành bàn giao; 01 HN tập huấn; một số chi hội bàn giao còn chậm', tienDoHan:'T7-T8/2026', nhom:'N4', heSo:80, E:1, K:1, N:0.75, chamNgay:5}),
+  defaultTask({name:'Xây dựng KH và tổ chức tuyên truyền, vận động cán bộ, Hội viên ủng hộ "Chiến dịch 500 ngày đêm"; phối hợp Ban CHQS phường và Đội quy tập hài cốt LS tỉnh TQ khai quật, quy tập 01 hài cốt LS tại TDP 8', canCu:'Chỉ đạo của Hội CCB tỉnh; KH tuyên truyền Chiến dịch', sanPham:'Tổng số tiền ủng hộ trên 24 triệu đồng; biên bản quy tập 01 hài cốt LS tại TDP 8, chuyển về NTL Vị Xuyên', tienDoHan:'T7-T9/2026', nhom:'N4', heSo:80, E:2, K:2, N:1, chamNgay:10})
+];
+
+let state = null;
+
+function defaultState(){
+  return {
+    header:{
+      coquan:'CƠ QUAN ỦY BAN MTTQ VIỆT NAM', donvi:'Phường Bình Thuận',
+      hoten:'Nguyễn Văn Đức', ngaysinh:'31/12/1980',
+      chucvuDang:'Ủy viên BCH Chi bộ các cơ quan Đảng, Đảng ủy phường Bình Thuận',
+      chucvuCQ:'Không',
+      chucvuDoanthe:'Chủ tịch Hội CCB phường kiêm Phó Chủ tịch MTTQ phường Bình Thuận',
+      donviCT:'Hội Cựu chiến binh phường Bình Thuận',
+      quy:'Quý III', nam:'2026'
+    },
+    wA:70, wB:30,
+    criteria: flattenCriteria(CRITERIA_DEFAULT),
+    groupA: GROUP_A_SEED.map(t=>Object.assign({},t)),
+    groupB: GROUP_B_SEED.map(t=>Object.assign({},t))
+  };
+}
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.warn('storage read failed', e); }
+  return defaultState();
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn('storage write failed', e); }
+}
+
+/* ============================================================
+   CALCULATIONS
+   ============================================================ */
+function calcTask(t){
+  const I = 1;
+  const J = I * (Number(t.heSo)||0);
+  const E = Number(t.E)||0;
+  const K = Number(t.K)||0;
+  const L = E>0 ? K/E : 0;
+  const M = J*L;
+  const N = Number(t.N)||0;
+  const O = M*N;
+  const days = Number(t.chamNgay)||0;
+  const Qc = days<=0 ? 1 : (days<=10 ? Math.max(0,1-0.05*days) : 0);
+  const R = M*Qc;
+  const kpi = (M+O+R)/3;
+  return {J,L,M,N,O,Q:Qc,R,kpi};
+}
+function calcGroup(tasks){
+  let sJ=0,sM=0,sO=0,sR=0;
+  tasks.forEach(t=>{ const c=calcTask(t); sJ+=c.J; sM+=c.M; sO+=c.O; sR+=c.R; });
+  const kpi = sJ>0 ? (sM+sO+sR)/3/sJ : 0;
+  return {sJ,sM,sO,sR,kpi};
+}
+function xepLoai(diem, khongDamBao){
+  if(khongDamBao>=5) return {label:'Không hoàn thành nhiệm vụ', tone:'bad'};
+  let base;
+  if(diem>90) base=3; else if(diem>=80) base=2; else if(diem>=60) base=1; else base=0;
+  if(base===3 && khongDamBao>0){ base = khongDamBao<=2 ? 2 : 1; }
+  else if(base===2 && khongDamBao>2){ base = 1; }
+  const map=[
+    {label:'Không hoàn thành nhiệm vụ', tone:'bad'},
+    {label:'Hoàn thành nhiệm vụ', tone:'warn'},
+    {label:'Hoàn thành tốt nhiệm vụ', tone:'good'},
+    {label:'Hoàn thành xuất sắc nhiệm vụ', tone:'good'}
+  ];
+  return map[base];
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function el(tag, attrs, children){
+  const e = document.createElement(tag);
+  if(attrs) for(const k in attrs){
+    if(k==='class') e.className=attrs[k];
+    else if(k==='html') e.innerHTML=attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  (children||[]).forEach(c=> e.appendChild(c));
+  return e;
+}
+function fmt(n){ return (Math.round(n*100)/100).toLocaleString('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtInt(n){ return (Math.round(n*100)/100).toString(); }
+
+function renderInfo(){
+  const grid = document.getElementById('infoGrid');
+  grid.innerHTML='';
+  const fields = [
+    ['hoten','Họ và tên'], ['ngaysinh','Ngày sinh'],
+    ['chucvuDang','Chức vụ Đảng'], ['chucvuCQ','Chức vụ chính quyền'],
+    ['chucvuDoanthe','Chức vụ đoàn thể'], ['donviCT','Đơn vị công tác'],
+    ['donvi','Đơn vị / phường'], ['coquan','Cơ quan']
+  ];
+  fields.forEach(([key,label])=>{
+    const f = el('div',{class:'field'});
+    f.appendChild(el('label',{html:label}));
+    const inp = el('input',{type:'text', value: state.header[key]||''});
+    inp.addEventListener('input', ()=>{ state.header[key]=inp.value; syncLetterhead(); save(); });
+    f.appendChild(inp);
+    grid.appendChild(f);
+  });
+  const qf = el('div',{class:'field'});
+  qf.appendChild(el('label',{html:'Quý / Năm'}));
+  const wrap = el('div',{style:'display:flex;gap:6px;'});
+  const q = el('select',{});
+  ['Quý I','Quý II','Quý III','Quý IV'].forEach(v=>{
+    const o=el('option',{value:v,html:v}); if(v===state.header.quy) o.selected=true; q.appendChild(o);
+  });
+  q.addEventListener('change', ()=>{ state.header.quy=q.value; syncLetterhead(); save(); });
+  const y = el('input',{type:'text', value:state.header.nam, style:'width:70px;'});
+  y.addEventListener('input', ()=>{ state.header.nam=y.value; syncLetterhead(); save(); });
+  wrap.appendChild(q); wrap.appendChild(y);
+  qf.appendChild(wrap);
+  grid.appendChild(qf);
+  qf.style.gridColumn='auto';
+  grid.style.display='grid';
+}
+function syncLetterhead(){
+  document.getElementById('lh-coquan').textContent = state.header.coquan;
+  document.getElementById('lh-donvi2').textContent = ' '+(state.header.donvi||'');
+  document.getElementById('lh-date').textContent = 'Tuyên Quang, '+state.header.quy+' năm '+state.header.nam;
+  document.getElementById('lh-quy').textContent = state.header.quy+', Năm '+state.header.nam;
+}
+
+function renderCriteria(){
+  const card = document.getElementById('critCard');
+  card.innerHTML='';
+  let idx=0;
+  CRITERIA_DEFAULT.forEach(sec=>{
+    card.appendChild(el('div',{class:'crit-group-title', html:sec.sec}));
+    sec.items.forEach(()=>{
+      const c = state.criteria[idx];
+      idx++;
+      const row = el('div',{class:'crit-row'});
+      const text = el('div',{class:'crit-text'});
+      text.appendChild(el('span',{class:'num',html:idx+'.'}));
+      text.appendChild(document.createTextNode(c.text));
+      row.appendChild(text);
+      const toggle = el('div',{class:'crit-toggle'});
+      const bGood = el('button',{class:'pill'+(c.dam?' on-good':'')}); bGood.textContent='Đảm bảo';
+      const bBad = el('button',{class:'pill'+(!c.dam?' on-bad':'')}); bBad.textContent='Không đảm bảo';
+      bGood.addEventListener('click', ()=>{ c.dam=true; renderCriteria(); recalcAll(); save(); });
+      bBad.addEventListener('click', ()=>{ c.dam=false; renderCriteria(); recalcAll(); save(); });
+      toggle.appendChild(bGood); toggle.appendChild(bBad);
+      row.appendChild(toggle);
+      card.appendChild(row);
+    });
+  });
+  const notDam = state.criteria.filter(c=>!c.dam).length;
+  card.appendChild(el('div',{class:'crit-summary', html:'Số tiêu chí <b>"Không đảm bảo"</b>: <b>'+notDam+' / '+state.criteria.length+'</b>'}));
+}
+
+function taskRowHtml(t, idx, groupKey){
+  const c = calcTask(t);
+  const tr = el('tr');
+
+  const tdName = el('td',{class:'col-name'});
+  const nameInput = el('textarea',{rows:'2'}); nameInput.value=t.name;
+  nameInput.addEventListener('input', ()=>{ t.name=nameInput.value; save(); });
+  tdName.appendChild(nameInput);
+  const toggleBtn = el('button',{class:'detail-toggle'}); toggleBtn.textContent = t.open ? 'Ẩn chi tiết' : 'Căn cứ / Sản phẩm / Tiến độ hạn...';
+  toggleBtn.addEventListener('click', ()=>{ t.open=!t.open; renderGroup(groupKey); });
+  tdName.appendChild(document.createElement('br'));
+  tdName.appendChild(toggleBtn);
+  tr.appendChild(tdName);
+
+  const tdNhom = el('td');
+  const selNhom = el('select',{});
+  Object.keys(HESO_NHOM).forEach(k=>{
+    const o = el('option',{value:k, html:k+' ('+HESO_NHOM[k]+')'}); if(k===t.nhom) o.selected=true; selNhom.appendChild(o);
+  });
+  tdNhom.appendChild(selNhom);
+  tr.appendChild(tdNhom);
+
+  const tdHeSo = el('td',{class:'col-num'});
+  const heSoInput = el('input',{type:'number', step:'1'}); heSoInput.value=t.heSo;
+  tdHeSo.appendChild(heSoInput);
+  tr.appendChild(tdHeSo);
+
+  const tdE = el('td',{class:'col-num'});
+  const eInput = el('input',{type:'number', step:'1', min:'0'}); eInput.value=t.E;
+  tdE.appendChild(eInput);
+  tr.appendChild(tdE);
+
+  const tdK = el('td',{class:'col-num'});
+  const kInput = el('input',{type:'number', step:'1', min:'0'}); kInput.value=t.K;
+  tdK.appendChild(kInput);
+  tr.appendChild(tdK);
+
+  const tdPercent = el('td',{class:'col-computed small', html:(c.L*100).toFixed(0)+'%'});
+  tr.appendChild(tdPercent);
+
+  const tdN = el('td',{});
+  const selN = el('select',{});
+  HESO_CL.forEach(h=>{
+    const o=el('option',{value:h.v, html:h.label}); if(Number(t.N)===h.v) o.selected=true; selN.appendChild(o);
+  });
+  tdN.appendChild(selN);
+  tr.appendChild(tdN);
+
+  const tdDays = el('td',{class:'col-num'});
+  const daysInput = el('input',{type:'number', step:'1', min:'0', title:'Số ngày chậm (0 = đúng/vượt tiến độ)'}); daysInput.value=t.chamNgay;
+  tdDays.appendChild(daysInput);
+  tr.appendChild(tdDays);
+
+  const tdQ = el('td',{class:'col-computed small', html:c.Q.toFixed(2)});
+  const tdM = el('td',{class:'col-computed', html:fmt(c.M)});
+  const tdO = el('td',{class:'col-computed', html:fmt(c.O)});
+  const tdR = el('td',{class:'col-computed', html:fmt(c.R)});
+  const tdKpi = el('td',{class:'col-computed', html:fmt(c.kpi)});
+  tr.appendChild(tdQ); tr.appendChild(tdM); tr.appendChild(tdO); tr.appendChild(tdR); tr.appendChild(tdKpi);
+
+  function refreshRow(){
+    const cc = calcTask(t);
+    tdPercent.textContent = (cc.L*100).toFixed(0)+'%';
+    tdQ.textContent = cc.Q.toFixed(2);
+    tdM.textContent = fmt(cc.M);
+    tdO.textContent = fmt(cc.O);
+    tdR.textContent = fmt(cc.R);
+    tdKpi.textContent = fmt(cc.kpi);
+    recalcAll();
+  }
+  selNhom.addEventListener('change', ()=>{ t.nhom=selNhom.value; t.heSo=HESO_NHOM[selNhom.value]; heSoInput.value=t.heSo; refreshRow(); save(); });
+  heSoInput.addEventListener('input', ()=>{ t.heSo=Number(heSoInput.value); refreshRow(); save(); });
+  eInput.addEventListener('input', ()=>{ t.E=Number(eInput.value); refreshRow(); save(); });
+  kInput.addEventListener('input', ()=>{ t.K=Number(kInput.value); refreshRow(); save(); });
+  selN.addEventListener('change', ()=>{ t.N=Number(selN.value); refreshRow(); save(); });
+  daysInput.addEventListener('input', ()=>{ t.chamNgay=Number(daysInput.value); refreshRow(); save(); });
+
+  const tdRm = el('td',{});
+  const rmBtn = el('button',{class:'rm-btn', title:'Xóa nhiệm vụ'}); rmBtn.innerHTML='&times;';
+  rmBtn.addEventListener('click', ()=>{
+    const arr = state[groupKey];
+    arr.splice(idx,1);
+    recalcAll(); save(); renderGroup(groupKey);
+  });
+  tdRm.appendChild(rmBtn);
+  tr.appendChild(tdRm);
+
+  const rows = [tr];
+  if(t.open){
+    const dtr = el('tr',{class:'detail-row'});
+    const dtd = el('td',{colspan:'13'});
+    const grid = el('div',{class:'detail-grid'});
+    const mk = (label,key,ph)=>{
+      const f = el('div',{class:'field'});
+      f.appendChild(el('label',{html:label}));
+      const ta = el('textarea',{rows:'2', placeholder:ph||''}); ta.value=t[key]||'';
+      ta.addEventListener('input', ()=>{ t[key]=ta.value; save(); });
+      f.appendChild(ta);
+      return f;
+    };
+    grid.appendChild(mk('Căn cứ xác định nhiệm vụ','canCu'));
+    grid.appendChild(mk('Sản phẩm / minh chứng','sanPham'));
+    grid.appendChild(mk('Tiến độ / thời hạn phải hoàn thành','tienDoHan'));
+    dtd.appendChild(grid);
+    dtr.appendChild(dtd);
+    rows.push(dtr);
+  }
+  return rows;
+}
+
+function renderGroup(groupKey){
+  const table = document.getElementById(groupKey==='groupA'?'tblA':'tblB');
+  table.innerHTML='';
+  const thead = el('thead');
+  const htr = el('tr');
+  ['Nhiệm vụ','Nhóm','Hệ số','SL đề ra (E)','TT hoàn thành (K)','% HT','Hệ số chất lượng (N)','Ngày chậm','Hệ số TĐ (Q)','Điểm A','Điểm B','Điểm C','KPI việc',''].forEach(h=>{
+    htr.appendChild(el('th',{html:h}));
+  });
+  thead.appendChild(htr);
+  table.appendChild(thead);
+  const tbody = el('tbody');
+  state[groupKey].forEach((t,idx)=>{
+    taskRowHtml(t, idx, groupKey).forEach(r=>tbody.appendChild(r));
+  });
+  table.appendChild(tbody);
+
+  const g = calcGroup(state[groupKey]);
+  const w = groupKey==='groupA' ? state.wA : state.wB;
+  const diem = g.kpi*w;
+  const sumDiv = document.getElementById(groupKey==='groupA'?'sumA':'sumB');
+  sumDiv.innerHTML='';
+  const items = [
+    ['Σ Điểm quy đổi (J)', fmtInt(g.sJ)],
+    ['Σ Điểm A', fmt(g.sM)],
+    ['Σ Điểm B', fmt(g.sO)],
+    ['Σ Điểm C', fmt(g.sR)],
+    ['KPI nhóm', fmt(g.kpi)],
+    ['Điểm thực hiện ('+'KPI × '+w+')', fmt(diem)]
+  ];
+  items.forEach(([label,val])=>{
+    const d = el('div');
+    d.appendChild(el('b',{html:val}));
+    d.appendChild(document.createTextNode(label));
+    sumDiv.appendChild(d);
+  });
+}
+
+function recalcAll(){
+  const gA = calcGroup(state.groupA);
+  const gB = calcGroup(state.groupB);
+  const diemA = gA.kpi*state.wA;
+  const diemB = gB.kpi*state.wB;
+  const total = diemA+diemB;
+  const notDam = state.criteria.filter(c=>!c.dam).length;
+  const rank = xepLoai(total, notDam);
+
+  document.getElementById('bar-total').textContent = fmt(total);
+  document.getElementById('bar-a').textContent = fmt(diemA);
+  document.getElementById('bar-b').textContent = fmt(diemB);
+  document.getElementById('bar-crit').textContent = notDam+'/'+state.criteria.length;
+  const badge = document.getElementById('bar-badge');
+  badge.textContent = rank.label;
+  badge.style.color = 'var(--'+rank.tone+')';
+
+  document.getElementById('finalTotal').textContent = fmt(total);
+  document.getElementById('fbA').textContent = fmt(diemA);
+  document.getElementById('fbB').textContent = fmt(diemB);
+  document.getElementById('fbCrit').textContent = notDam+' / '+state.criteria.length;
+  const fbadge = document.getElementById('finalBadge');
+  fbadge.textContent = rank.label;
+  fbadge.style.color = 'var(--'+rank.tone+')';
+  document.getElementById('finalNote').textContent =
+    'Nhóm A: KPI '+fmt(gA.kpi)+' × '+state.wA+' = '+fmt(diemA)+' điểm.  '+
+    'Nhóm B: KPI '+fmt(gB.kpi)+' × '+state.wB+' = '+fmt(diemB)+' điểm.  '+
+    'Tổng = '+fmt(total)+' / 100.';
+
+  // update group summary blocks without a full table re-render if already built
+  ['groupA','groupB'].forEach(k=>{
+    const sumDiv = document.getElementById(k==='groupA'?'sumA':'sumB');
+    if(sumDiv && sumDiv.children.length) {
+      const g = k==='groupA'?gA:gB;
+      const w = k==='groupA'?state.wA:state.wB;
+      const diem = g.kpi*w;
+      const vals = [fmtInt(g.sJ), fmt(g.sM), fmt(g.sO), fmt(g.sR), fmt(g.kpi), fmt(diem)];
+      Array.from(sumDiv.children).forEach((d,i)=>{ d.querySelector('b').textContent = vals[i]; });
+    }
+  });
+  // update per-row computed cells cheaply by re-rendering tables (kept simple & robust)
+}
+
+function fullRenderTables(){
+  renderGroup('groupA');
+  renderGroup('groupB');
+}
+
+/* ============================================================
+   AI IMPORT (Phân tích báo cáo -> gợi ý bảng nhiệm vụ)
+   ============================================================ */
+let sampleNS = null;
+
+async function initSample(){
+  const status = document.getElementById('aiStatus');
+  const btn = document.getElementById('analyzeBtn');
+  if(!(window.claude && typeof window.claude.use === 'function')){
+    status.textContent = 'Tính năng AI hỗ trợ không khả dụng trong chế độ xem này — bạn vẫn có thể nhập tay ở bảng bên dưới.';
+    btn.disabled = true;
+    return;
+  }
+  try{ sampleNS = await window.claude.use('sample'); }catch(e){ sampleNS = null; }
+  if(!sampleNS){
+    status.textContent = 'Tính năng AI hỗ trợ chưa sẵn sàng cho chế độ xem này — bạn vẫn có thể nhập tay ở bảng bên dưới.';
+    btn.disabled = true;
+  }
+}
+
+function buildAiPrompt(text){
+  return `Bạn là trợ lý trích xuất dữ liệu cho một bảng chấm điểm KPI cán bộ theo quý. Dưới đây là nội dung báo cáo công tác.
+
+Đọc kỹ và tách thành danh sách các NHIỆM VỤ cụ thể (mỗi việc/mỗi gạch đầu dòng mô tả một công việc riêng biệt là một nhiệm vụ). Chỉ dùng thông tin thực sự có trong báo cáo, KHÔNG suy diễn hay bịa thêm số liệu không có căn cứ — nếu không rõ, dùng giá trị mặc định an toàn nêu bên dưới.
+
+Với mỗi nhiệm vụ, xác định các trường:
+- name: tên/mô tả ngắn gọn nhiệm vụ
+- canCu: căn cứ ban hành (số hiệu văn bản, kế hoạch... nếu báo cáo có nêu; để trống nếu không có)
+- sanPham: sản phẩm / kết quả / minh chứng cụ thể đã nêu trong báo cáo
+- tienDoHan: thời hạn / mốc thời gian nêu trong báo cáo (nếu có)
+- group: "A" nếu là nhiệm vụ thường xuyên, định kỳ; "B" nếu là nhiệm vụ trọng tâm, then chốt, đột phá, được báo cáo nhấn mạnh đặc biệt (mặc định "A" nếu không rõ)
+- nhom: một trong N1,N2,N3,N4,N5 theo độ khó/phạm vi (N1 = đơn giản, thường lệ; N2 = định kỳ, có quy trình; N3 = phức tạp vừa, cần phối hợp; N4 = khó, mới, phạm vi rộng; N5 = đặc biệt khó, tầm chiến lược) — suy luận hợp lý từ nội dung, mặc định N2 nếu không rõ
+- E: số lượng chỉ tiêu đề ra (số nguyên, mặc định 1 nếu báo cáo không nêu số lượng cụ thể)
+- K: số lượng thực tế đã hoàn thành (số nguyên; nếu báo cáo nói đã hoàn thành/xong thì K=E; nếu nói chưa thực hiện/chưa hoàn thành thì K=0; nếu có số liệu cụ thể thì lấy đúng số đó)
+- N: hệ số chất lượng, một trong 1 / 0.75 / 0.5 / 0.25 / 0 theo mức độ đạt yêu cầu được mô tả (mặc định 1 nếu báo cáo nói hoàn thành tốt/đạt yêu cầu, không nêu rõ thì để 1)
+- chamNgay: số ngày chậm tiến độ nếu báo cáo có nêu bị chậm/trễ (số nguyên, 0 nếu đúng/vượt tiến độ hoặc không đề cập)
+
+Trả về đúng định dạng JSON sau, không thêm chữ nào khác:
+{"tasks": [ {"name":"...", "canCu":"...", "sanPham":"...", "tienDoHan":"...", "group":"A", "nhom":"N2", "E":1, "K":1, "N":1, "chamNgay":0} ] }
+
+Nội dung báo cáo:
+"""
+${text}
+"""`;
+}
+
+async function analyzeReport(){
+  const status = document.getElementById('aiStatus');
+  const btn = document.getElementById('analyzeBtn');
+  const text = document.getElementById('reportText').value.trim();
+  if(!text){ status.textContent = 'Vui lòng dán nội dung báo cáo trước.'; return; }
+  if(!sampleNS){ status.textContent = 'Tính năng AI hỗ trợ chưa sẵn sàng.'; return; }
+  btn.disabled = true;
+  status.textContent = 'Đang phân tích báo cáo...';
+  try{
+    const result = await sampleNS.json(buildAiPrompt(text), {modelTier:'default'});
+    const tasks = (result && result.tasks) || [];
+    if(!tasks.length){ status.textContent = 'Không tách được nhiệm vụ nào từ nội dung đã dán — thử bổ sung chi tiết hơn hoặc nhập tay bên dưới.'; }
+    else { status.textContent = 'Đã tách được '+tasks.length+' nhiệm vụ — kiểm tra lại bên dưới trước khi thêm vào bảng.'; }
+    renderAiPreview(tasks);
+  }catch(err){
+    console.error(err);
+    const code = err && err.code;
+    if(code==='not_granted') status.textContent = 'Bạn chưa cấp quyền cho tính năng AI hỗ trợ trong phiên xem này.';
+    else if(code==='rate_limited') status.textContent = 'Đang có quá nhiều yêu cầu, vui lòng thử lại sau ít phút.';
+    else status.textContent = 'Không thể phân tích báo cáo lúc này — bạn vẫn có thể nhập tay ở bảng bên dưới.';
+  }
+  btn.disabled = false;
+}
+
+function renderAiPreview(tasks){
+  const wrap = document.getElementById('aiPreviewWrap');
+  wrap.innerHTML = '';
+  if(!tasks.length) return;
+  const tw = el('div',{class:'tablewrap'});
+  const table = el('table',{class:'tasks'});
+  const thead = el('thead');
+  const htr = el('tr');
+  ['Chọn','Nhiệm vụ (trích xuất)','Nhóm','Độ khó','E','K','Hệ số CL','Ngày chậm'].forEach(h=> htr.appendChild(el('th',{html:h})));
+  thead.appendChild(htr); table.appendChild(thead);
+  const tbody = el('tbody');
+  const rowRefs = [];
+  tasks.forEach(raw=>{
+    const t = {
+      name: raw.name||'', canCu: raw.canCu||'', sanPham: raw.sanPham||'', tienDoHan: raw.tienDoHan||'',
+      group: (raw.group==='B'?'B':'A'),
+      nhom: HESO_NHOM[raw.nhom]!==undefined ? raw.nhom : 'N2',
+      E: Number(raw.E)||1, K: Number(raw.K)||0,
+      N: [1,0.75,0.5,0.25,0].includes(Number(raw.N)) ? Number(raw.N) : 1,
+      chamNgay: Number(raw.chamNgay)||0
+    };
+    const tr = el('tr');
+    const chk = el('input',{type:'checkbox'}); chk.checked = true;
+    tr.appendChild(el('td',{},[chk]));
+    const nameCell = el('td',{class:'col-name'});
+    const nameInput = el('textarea',{rows:'2'}); nameInput.value=t.name;
+    nameInput.addEventListener('input', ()=>{ t.name=nameInput.value; });
+    nameCell.appendChild(nameInput);
+    tr.appendChild(nameCell);
+    const selGroup = el('select',{});
+    ['A','B'].forEach(g=>{ const o=el('option',{value:g,html:'Nhóm '+g}); if(g===t.group) o.selected=true; selGroup.appendChild(o); });
+    selGroup.addEventListener('change', ()=>{ t.group=selGroup.value; });
+    tr.appendChild(el('td',{},[selGroup]));
+    const selNhom = el('select',{});
+    Object.keys(HESO_NHOM).forEach(k=>{ const o=el('option',{value:k,html:k}); if(k===t.nhom) o.selected=true; selNhom.appendChild(o); });
+    selNhom.addEventListener('change', ()=>{ t.nhom=selNhom.value; });
+    tr.appendChild(el('td',{},[selNhom]));
+    const eInput = el('input',{type:'number', class:'col-num'}); eInput.value=t.E;
+    eInput.addEventListener('input', ()=>{ t.E=Number(eInput.value); });
+    tr.appendChild(el('td',{class:'col-num'},[eInput]));
+    const kInput = el('input',{type:'number', class:'col-num'}); kInput.value=t.K;
+    kInput.addEventListener('input', ()=>{ t.K=Number(kInput.value); });
+    tr.appendChild(el('td',{class:'col-num'},[kInput]));
+    const selN = el('select',{});
+    HESO_CL.forEach(h=>{ const o=el('option',{value:h.v,html:h.v}); if(t.N===h.v) o.selected=true; selN.appendChild(o); });
+    selN.addEventListener('change', ()=>{ t.N=Number(selN.value); });
+    tr.appendChild(el('td',{},[selN]));
+    const dInput = el('input',{type:'number', class:'col-num'}); dInput.value=t.chamNgay;
+    dInput.addEventListener('input', ()=>{ t.chamNgay=Number(dInput.value); });
+    tr.appendChild(el('td',{class:'col-num'},[dInput]));
+    tbody.appendChild(tr);
+    rowRefs.push({t, chk});
+  });
+  table.appendChild(tbody);
+  tw.appendChild(table);
+  wrap.appendChild(tw);
+
+  const addBtn = el('button',{class:'btn btn-primary', style:'margin-top:10px;'});
+  addBtn.textContent = 'Thêm các mục đã chọn vào bảng nhiệm vụ';
+  addBtn.addEventListener('click', ()=>{
+    let n=0;
+    rowRefs.forEach(({t,chk})=>{
+      if(!chk.checked) return;
+      const task = defaultTask({
+        name:t.name, canCu:t.canCu, sanPham:t.sanPham, tienDoHan:t.tienDoHan,
+        nhom:t.nhom, heSo:HESO_NHOM[t.nhom], E:t.E, K:t.K, N:t.N, chamNgay:t.chamNgay
+      });
+      if(t.group==='B') state.groupB.push(task); else state.groupA.push(task);
+      n++;
+    });
+    save(); fullRenderTables(); recalcAll();
+    wrap.innerHTML=''; document.getElementById('reportText').value=''; document.getElementById('aiStatus').textContent = 'Đã thêm '+n+' nhiệm vụ vào bảng — cuộn xuống Phần II để kiểm tra và chỉnh sửa.';
+  });
+  wrap.appendChild(addBtn);
+}
+
+/* ============================================================
+   GITHUB SYNC (lưu/tải dữ liệu qua GitHub Contents API)
+   ============================================================ */
+const GH_KEY = 'kpi-github-config-v1';
+let ghConfig = null;
+
+function loadGhConfig(){
+  try{
+    const raw = localStorage.getItem(GH_KEY);
+    if(raw) return Object.assign({token:'',owner:'',repo:'',branch:'main',path:'kpi-data.json'}, JSON.parse(raw));
+  }catch(e){ console.warn('gh config read failed', e); }
+  return {token:'', owner:'', repo:'', branch:'main', path:'kpi-data.json'};
+}
+function saveGhConfig(){
+  try{ localStorage.setItem(GH_KEY, JSON.stringify(ghConfig)); }
+  catch(e){ console.warn('gh config write failed', e); }
+}
+
+function renderGhFields(){
+  const grid = document.getElementById('ghGrid');
+  grid.innerHTML='';
+  const fields = [
+    ['token','Personal Access Token','password'],
+    ['owner','Chủ sở hữu / tổ chức (vd: nguyenthithuhiensteam)','text'],
+    ['repo','Tên repository (vd: gdmn_388)','text'],
+    ['branch','Nhánh','text'],
+    ['path','Đường dẫn file JSON (vd: data/kpi-nguyen-van-duc.json)','text']
+  ];
+  fields.forEach(([key,label,type])=>{
+    const f = el('div',{class:'field'});
+    f.appendChild(el('label',{html:label}));
+    const inp = el('input',{type, value: ghConfig[key]||''});
+    inp.addEventListener('input', ()=>{ ghConfig[key]=inp.value; saveGhConfig(); });
+    f.appendChild(inp);
+    grid.appendChild(f);
+  });
+}
+
+function ghHeaders(){
+  return {
+    'Authorization': 'Bearer '+ghConfig.token,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+}
+function ghContentsUrl(){
+  const path = String(ghConfig.path||'').split('/').filter(Boolean).map(encodeURIComponent).join('/');
+  return 'https://api.github.com/repos/'+encodeURIComponent(ghConfig.owner)+'/'+encodeURIComponent(ghConfig.repo)+'/contents/'+path;
+}
+function b64EncodeUtf8(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64DecodeUtf8(str){ return decodeURIComponent(escape(atob(str))); }
+
+function ghRequiredFieldsOk(status){
+  if(!ghConfig.token || !ghConfig.owner || !ghConfig.repo || !ghConfig.path){
+    status.textContent = 'Vui lòng điền đủ Token, Owner, Repo và Đường dẫn file ở trên.';
+    return false;
+  }
+  return true;
+}
+
+async function ghTestConnection(){
+  const status = document.getElementById('ghStatus');
+  if(!ghConfig.token || !ghConfig.owner || !ghConfig.repo){ status.textContent='Vui lòng điền đủ Token, Owner, Repo.'; return; }
+  status.textContent = 'Đang kiểm tra kết nối...';
+  try{
+    const res = await fetch('https://api.github.com/repos/'+encodeURIComponent(ghConfig.owner)+'/'+encodeURIComponent(ghConfig.repo), {headers: ghHeaders()});
+    if(res.status===200){ const j = await res.json(); status.textContent = 'Kết nối thành công tới repository "'+j.full_name+'".'; }
+    else if(res.status===401){ status.textContent = 'Token không hợp lệ hoặc đã hết hạn.'; }
+    else if(res.status===404){ status.textContent = 'Không tìm thấy repository — kiểm tra lại Owner/Repo, hoặc token chưa được cấp quyền truy cập repo này.'; }
+    else{ status.textContent = 'Lỗi kết nối: HTTP '+res.status; }
+  }catch(e){ status.textContent = 'Không thể kết nối tới GitHub — kiểm tra lại kết nối mạng.'; }
+}
+
+async function ghSaveData(){
+  const status = document.getElementById('ghStatus');
+  if(!ghRequiredFieldsOk(status)) return;
+  status.textContent = 'Đang lưu lên GitHub...';
+  try{
+    let sha;
+    const getRes = await fetch(ghContentsUrl()+'?ref='+encodeURIComponent(ghConfig.branch||'main'), {headers: ghHeaders()});
+    if(getRes.status===200){ const j = await getRes.json(); sha = j.sha; }
+    else if(getRes.status!==404){ status.textContent = 'Lỗi khi kiểm tra file hiện có: HTTP '+getRes.status; return; }
+
+    const body = {
+      message: 'Cập nhật dữ liệu tự đánh giá KPI ('+new Date().toLocaleString('vi-VN')+')',
+      content: b64EncodeUtf8(JSON.stringify(state, null, 2)),
+      branch: ghConfig.branch || 'main'
+    };
+    if(sha) body.sha = sha;
+    const putRes = await fetch(ghContentsUrl(), {
+      method:'PUT',
+      headers: Object.assign({'Content-Type':'application/json'}, ghHeaders()),
+      body: JSON.stringify(body)
+    });
+    if(putRes.status===200 || putRes.status===201){ status.textContent = 'Đã lưu dữ liệu lên GitHub thành công.'; }
+    else{
+      const j = await putRes.json().catch(()=>({}));
+      status.textContent = 'Lưu thất bại: HTTP '+putRes.status+(j.message?(' — '+j.message):'');
+    }
+  }catch(e){ status.textContent = 'Lỗi khi lưu lên GitHub — kiểm tra lại mạng/token.'; }
+}
+
+async function ghLoadData(){
+  const status = document.getElementById('ghStatus');
+  if(!ghRequiredFieldsOk(status)) return;
+  status.textContent = 'Đang tải từ GitHub...';
+  try{
+    const res = await fetch(ghContentsUrl()+'?ref='+encodeURIComponent(ghConfig.branch||'main'), {headers: ghHeaders()});
+    if(res.status===200){
+      const j = await res.json();
+      const jsonStr = b64DecodeUtf8(String(j.content||'').replace(/\n/g,''));
+      const loaded = JSON.parse(jsonStr);
+      if(!confirm('Tải dữ liệu từ GitHub sẽ GHI ĐÈ dữ liệu hiện tại trong app. Tiếp tục?')){ status.textContent=''; return; }
+      state = loaded;
+      save();
+      renderInfo(); syncLetterhead(); renderCriteria(); fullRenderTables(); recalcAll();
+      status.textContent = 'Đã tải dữ liệu từ GitHub thành công.';
+    }
+    else if(res.status===404){ status.textContent = 'Chưa có file dữ liệu nào trên GitHub ở đường dẫn này — hãy bấm "Lưu lên GitHub" trước.'; }
+    else if(res.status===401){ status.textContent = 'Token không hợp lệ hoặc đã hết hạn.'; }
+    else{ status.textContent = 'Tải thất bại: HTTP '+res.status; }
+  }catch(e){ status.textContent = 'Lỗi khi tải từ GitHub — kiểm tra lại mạng/token.'; }
+}
+
+function init(){
+  state = load();
+  document.getElementById('wA').value = state.wA;
+  document.getElementById('wB').value = state.wB;
+  document.getElementById('wA').addEventListener('input', e=>{
+    state.wA = Number(e.target.value); state.wB = 100-state.wA;
+    document.getElementById('wB').value = state.wB;
+    recalcAll(); save();
+  });
+  document.getElementById('wB').addEventListener('input', e=>{
+    state.wB = Number(e.target.value); state.wA = 100-state.wB;
+    document.getElementById('wA').value = state.wA;
+    recalcAll(); save();
+  });
+  document.getElementById('addA').addEventListener('click', ()=>{
+    state.groupA.push(defaultTask({name:'Nhiệm vụ mới'})); save(); renderGroup('groupA'); recalcAll();
+  });
+  document.getElementById('addB').addEventListener('click', ()=>{
+    state.groupB.push(defaultTask({name:'Nhiệm vụ mới'})); save(); renderGroup('groupB'); recalcAll();
+  });
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(confirm('Xóa toàn bộ dữ liệu đã nhập và khôi phục dữ liệu mẫu ban đầu?')){
+      state = defaultState(); save();
+      renderInfo(); syncLetterhead(); renderCriteria(); fullRenderTables(); recalcAll();
+    }
+  });
+
+  document.getElementById('analyzeBtn').addEventListener('click', analyzeReport);
+  document.getElementById('reportFile').addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{ document.getElementById('reportText').value = reader.result; };
+    reader.onerror = ()=>{ document.getElementById('aiStatus').textContent = 'Không đọc được file — thử dán nội dung trực tiếp.'; };
+    reader.readAsText(f, 'UTF-8');
+  });
+  initSample();
+
+  ghConfig = loadGhConfig();
+  renderGhFields();
+  document.getElementById('ghTest').addEventListener('click', ghTestConnection);
+  document.getElementById('ghSave').addEventListener('click', ghSaveData);
+  document.getElementById('ghLoad').addEventListener('click', ghLoadData);
+
+  renderInfo();
+  syncLetterhead();
+  renderCriteria();
+  fullRenderTables();
+  recalcAll();
+}
+init();
+</script>
+</body>
+</html>
