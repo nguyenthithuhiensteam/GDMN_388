@@ -1,5 +1,6 @@
 """Chuẩn bị CSDL mới (đã migrate) để nạp bản sao lưu: xóa các dòng cấu hình mặc định do migration tạo,
 tránh trùng khóa khi loaddata. Từ chối chạy nếu CSDL đã có tài khoản người dùng."""
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 

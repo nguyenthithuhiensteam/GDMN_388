@@ -72,38 +72,70 @@ ALL = "__all__"
 
 DEFAULT_MATRIX = {
     ROLE_ADMIN: ALL,
-    ROLE_PRINCIPAL: {
-        m: [a for a in acts if not (m == "user" and a == "delete")] for m, (_, acts) in MODULES.items()
-    },
+    ROLE_PRINCIPAL: {m: [a for a in acts if not (m == "user" and a == "delete")] for m, (_, acts) in MODULES.items()},
     ROLE_VICE: {
-        "news": ALL, "announcement": ALL, "page": ALL, "album": ALL, "public_document": ALL,
-        "disclosure": ["view", "create", "edit", "approve"], "staff_profile": ALL,
+        "news": ALL,
+        "announcement": ALL,
+        "page": ALL,
+        "album": ALL,
+        "public_document": ALL,
+        "disclosure": ["view", "create", "edit", "approve"],
+        "staff_profile": ALL,
         "official_doc": ["view", "create", "edit", "download", "export"],
-        "plan": ALL, "task": ALL, "evidence": ALL, "report": ALL,
-        "user": ["view"], "org": ["view"], "settings": ["view"], "contact": ["view"], "ai": ALL,
+        "plan": ALL,
+        "task": ALL,
+        "evidence": ALL,
+        "report": ALL,
+        "user": ["view"],
+        "org": ["view"],
+        "settings": ["view"],
+        "contact": ["view"],
+        "ai": ALL,
     },
     ROLE_OFFICE: {
-        "news": ["view", "create", "edit"], "announcement": ["view", "create", "edit"],
-        "page": ["view", "create", "edit"], "album": ["view", "create", "edit"],
-        "public_document": ALL, "disclosure": ["view", "create", "edit"], "staff_profile": ALL,
-        "official_doc": ALL, "plan": ["view", "download"], "task": ["view", "edit"],
-        "evidence": ["view", "create", "edit", "download", "export"], "report": ["view"],
-        "user": ["view"], "org": ["view", "create", "edit"], "contact": ALL, "ai": ALL,
+        "news": ["view", "create", "edit"],
+        "announcement": ["view", "create", "edit"],
+        "page": ["view", "create", "edit"],
+        "album": ["view", "create", "edit"],
+        "public_document": ALL,
+        "disclosure": ["view", "create", "edit"],
+        "staff_profile": ALL,
+        "official_doc": ALL,
+        "plan": ["view", "download"],
+        "task": ["view", "edit"],
+        "evidence": ["view", "create", "edit", "download", "export"],
+        "report": ["view"],
+        "user": ["view"],
+        "org": ["view", "create", "edit"],
+        "contact": ALL,
+        "ai": ALL,
     },
     ROLE_GROUP_LEADER: {
-        "news": ["view", "create", "edit"], "announcement": ["view"], "album": ["view", "create", "edit"],
+        "news": ["view", "create", "edit"],
+        "announcement": ["view"],
+        "album": ["view", "create", "edit"],
         "official_doc": ["view", "download"],
         "plan": ["view", "create", "edit", "approve", "download", "export"],
         "task": ["view", "create", "edit", "approve"],
-        "evidence": ["view", "create", "edit", "download"], "report": ["view"], "org": ["view"], "ai": ALL,
+        "evidence": ["view", "create", "edit", "download"],
+        "report": ["view"],
+        "org": ["view"],
+        "ai": ALL,
     },
     ROLE_TEACHER: {
-        "news": ["view", "create", "edit"], "album": ["view", "create", "edit"],
-        "official_doc": ["view", "download"], "plan": ["view", "create", "edit", "download"],
-        "task": ["view", "edit"], "evidence": ["view", "create", "edit", "download"], "ai": ALL,
+        "news": ["view", "create", "edit"],
+        "album": ["view", "create", "edit"],
+        "official_doc": ["view", "download"],
+        "plan": ["view", "create", "edit", "download"],
+        "task": ["view", "edit"],
+        "evidence": ["view", "create", "edit", "download"],
+        "ai": ALL,
     },
     ROLE_STAFF: {
-        "news": ["view"], "official_doc": ["view", "download"], "task": ["view", "edit"], "evidence": ["view"],
+        "news": ["view"],
+        "official_doc": ["view", "download"],
+        "task": ["view", "edit"],
+        "evidence": ["view"],
     },
 }
 
@@ -135,9 +167,7 @@ def has_perm(user, module, action):
     if cache is None:
         from .models import RolePermission
 
-        cache = set(
-            RolePermission.objects.filter(role=user.role, allowed=True).values_list("module", "action")
-        )
+        cache = set(RolePermission.objects.filter(role=user.role, allowed=True).values_list("module", "action"))
         user._perm_cache = cache
     return (module, action) in cache
 

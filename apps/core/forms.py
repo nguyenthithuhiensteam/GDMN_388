@@ -32,8 +32,9 @@ class SiteSettingsForm(BaseModelForm):
 class ContactForm(BaseModelForm):
     """Biểu mẫu liên hệ có chống spam: trường bẫy (honeypot) + kiểm tra thời gian điền + giới hạn tần suất."""
 
-    website = forms.CharField(required=False, label="Để trống trường này",
-                              widget=forms.TextInput(attrs={"autocomplete": "off", "tabindex": "-1"}))
+    website = forms.CharField(
+        required=False, label="Để trống trường này", widget=forms.TextInput(attrs={"autocomplete": "off", "tabindex": "-1"})
+    )
     ts = forms.CharField(widget=forms.HiddenInput)
     agree = forms.BooleanField(label="Tôi đồng ý để nhà trường sử dụng thông tin trên để phản hồi liên hệ này.")
 

@@ -1,4 +1,5 @@
 """Dashboard, cấu hình hệ thống, nhật ký, thông báo nội bộ, liên hệ."""
+
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -73,10 +74,17 @@ def dashboard(request):
     upcoming_tasks = []
     if has_perm(user, "task", "view"):
         tasks = Task.objects.for_user(user)
-        mine = tasks.filter(Q(assignee=user) | Q(assigned_group_id=user.group_id, assignee__isnull=True)) \
-            if not has_full_scope(user) else tasks
-        upcoming_tasks = mine.open().filter(due_date__isnull=False, due_date__lte=today + timedelta(days=7)) \
-            .select_related("assignee").order_by("due_date")[:8]
+        mine = (
+            tasks.filter(Q(assignee=user) | Q(assigned_group_id=user.group_id, assignee__isnull=True))
+            if not has_full_scope(user)
+            else tasks
+        )
+        upcoming_tasks = (
+            mine.open()
+            .filter(due_date__isnull=False, due_date__lte=today + timedelta(days=7))
+            .select_related("assignee")
+            .order_by("due_date")[:8]
+        )
         cards.append(("Nhiệm vụ đang mở", mine.open().count(), "office:task_list", "list-check"))
         overdue = mine.overdue().count()
         if overdue:
@@ -97,11 +105,20 @@ def dashboard(request):
     activity = AuditLog.objects.select_related("user")
     if not has_perm(user, "audit", "view"):
         activity = activity.filter(user=user)
-    return render(request, "core/dashboard.html", {
-        "cards": cards, "alerts": alerts, "recent_docs": recent_docs, "upcoming_tasks": upcoming_tasks,
-        "activity": activity[:10], "notifications": Notification.objects.filter(user=user, is_read=False)[:5],
-        "page_title": "Tổng quan", "ai_enabled": settings.AI_ENABLED,
-    })
+    return render(
+        request,
+        "core/dashboard.html",
+        {
+            "cards": cards,
+            "alerts": alerts,
+            "recent_docs": recent_docs,
+            "upcoming_tasks": upcoming_tasks,
+            "activity": activity[:10],
+            "notifications": Notification.objects.filter(user=user, is_read=False)[:5],
+            "page_title": "Tổng quan",
+            "ai_enabled": settings.AI_ENABLED,
+        },
+    )
 
 
 @require_perm("settings", "view")
@@ -148,11 +165,18 @@ def site_settings(request):
     backups = []
     if settings.BACKUP_DIR.exists():
         backups = sorted(settings.BACKUP_DIR.glob("backup-*.zip"), reverse=True)[:10]
-        backups = [{"name": b.name, "size": b.stat().st_size, "mtime": datetime.fromtimestamp(b.stat().st_mtime)}
-                   for b in backups]
-    return render(request, "core/settings.html", {
-        "form": form, "can_edit": can_edit, "system": system_info, "backups": backups, "page_title": "Cấu hình hệ thống",
-    })
+        backups = [{"name": b.name, "size": b.stat().st_size, "mtime": datetime.fromtimestamp(b.stat().st_mtime)} for b in backups]
+    return render(
+        request,
+        "core/settings.html",
+        {
+            "form": form,
+            "can_edit": can_edit,
+            "system": system_info,
+            "backups": backups,
+            "page_title": "Cấu hình hệ thống",
+        },
+    )
 
 
 @require_perm("audit", "view")
@@ -162,27 +186,43 @@ def audit_list(request):
     if form.is_valid():
         q = form.cleaned_data.get("q")
         if q:
-            qs = qs.filter(Q(action__icontains=q) | Q(object_repr__icontains=q) | Q(user__username__icontains=q)
-                           | Q(user__full_name__icontains=q) | Q(module__icontains=q))
+            qs = qs.filter(
+                Q(action__icontains=q)
+                | Q(object_repr__icontains=q)
+                | Q(user__username__icontains=q)
+                | Q(user__full_name__icontains=q)
+                | Q(module__icontains=q)
+            )
         if form.cleaned_data.get("date_from"):
             qs = qs.filter(created_at__date__gte=form.cleaned_data["date_from"])
         if form.cleaned_data.get("date_to"):
             qs = qs.filter(created_at__date__lte=form.cleaned_data["date_to"])
     params = request.GET.copy()
     params.pop("page", None)
-    return render(request, "core/audit_list.html", {
-        "form": form, "page_obj": Paginator(qs, 50).get_page(request.GET.get("page")),
-        "page_title": "Nhật ký hệ thống", "querystring": params.urlencode(),
-        "can_export": has_perm(request.user, "audit", "export"),
-    })
+    return render(
+        request,
+        "core/audit_list.html",
+        {
+            "form": form,
+            "page_obj": Paginator(qs, 50).get_page(request.GET.get("page")),
+            "page_title": "Nhật ký hệ thống",
+            "querystring": params.urlencode(),
+            "can_export": has_perm(request.user, "audit", "export"),
+        },
+    )
 
 
 @login_required
 def notifications(request):
     qs = Notification.objects.filter(user=request.user)
-    return render(request, "core/notifications.html", {
-        "page_obj": Paginator(qs, 30).get_page(request.GET.get("page")), "page_title": "Nhắc việc",
-    })
+    return render(
+        request,
+        "core/notifications.html",
+        {
+            "page_obj": Paginator(qs, 30).get_page(request.GET.get("page")),
+            "page_title": "Nhắc việc",
+        },
+    )
 
 
 @login_required
@@ -212,10 +252,16 @@ def contact_list(request):
     status = request.GET.get("status")
     if status in dict(ContactMessage.STATUS):
         qs = qs.filter(status=status)
-    return render(request, "core/contact_list.html", {
-        "page_obj": Paginator(qs, 30).get_page(request.GET.get("page")), "status": status,
-        "statuses": ContactMessage.STATUS, "page_title": "Liên hệ",
-    })
+    return render(
+        request,
+        "core/contact_list.html",
+        {
+            "page_obj": Paginator(qs, 30).get_page(request.GET.get("page")),
+            "status": status,
+            "statuses": ContactMessage.STATUS,
+            "page_title": "Liên hệ",
+        },
+    )
 
 
 @require_perm("contact", "view")
@@ -227,9 +273,16 @@ def contact_detail(request, pk):
         log_action(request, "contact_update", obj, module="contact")
         messages.success(request, "Đã cập nhật.")
         return redirect("core:contact_list")
-    return render(request, "core/contact_detail.html", {
-        "obj": obj, "form": form, "page_title": "Liên hệ", "can_delete": has_perm(request.user, "contact", "delete"),
-    })
+    return render(
+        request,
+        "core/contact_detail.html",
+        {
+            "obj": obj,
+            "form": form,
+            "page_title": "Liên hệ",
+            "can_delete": has_perm(request.user, "contact", "delete"),
+        },
+    )
 
 
 @require_perm("contact", "delete")

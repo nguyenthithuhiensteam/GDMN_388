@@ -34,10 +34,10 @@ urlpatterns = [
     path("nhiem-vu/<int:pk>/minh-chung/", v.task_attach, name="task_attach"),
     path("nhiem-vu/tep/<int:pk>/", v.task_attachment_download, name="task_attachment"),
     path("nhiem-vu/xuat-excel/", v.task_export, name="task_export"),
-    *crud("evcat", "danh-muc-minh-chung", v.EvidenceCategoryList, v.EvidenceCategoryCreate, v.EvidenceCategoryUpdate,
-          v.EvidenceCategoryDelete),
-    *crud("evidence", "minh-chung", v.EvidenceList, v.EvidenceCreate, v.EvidenceUpdate, v.EvidenceDelete,
-          v.EvidenceDetail),
+    *crud(
+        "evcat", "danh-muc-minh-chung", v.EvidenceCategoryList, v.EvidenceCategoryCreate, v.EvidenceCategoryUpdate, v.EvidenceCategoryDelete
+    ),
+    *crud("evidence", "minh-chung", v.EvidenceList, v.EvidenceCreate, v.EvidenceUpdate, v.EvidenceDelete, v.EvidenceDetail),
     path("minh-chung/<int:pk>/tai-len/", v.evidence_upload, name="evidence_upload"),
     path("minh-chung/<int:pk>/tai-xuong/v<int:version>/", v.evidence_download, name="evidence_download"),
     path("minh-chung/xuat-excel/", v.evidence_export, name="evidence_export"),

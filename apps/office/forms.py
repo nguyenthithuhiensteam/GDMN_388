@@ -7,18 +7,41 @@ from apps.core.validators import validate_document_upload
 from apps.org.models import Catalog, SchoolClass
 
 from .models import (
-    EducationPlan, Evidence, EvidenceCategory, OfficialDocument, PlanExportTemplate, Task,
+    EducationPlan,
+    Evidence,
+    EvidenceCategory,
+    OfficialDocument,
+    PlanExportTemplate,
+    Task,
 )
 
 
 class OfficialDocumentForm(BaseModelForm):
     class Meta:
         model = OfficialDocument
-        fields = ["direction", "number", "symbol", "issue_date", "issuer", "issuer_text", "doc_type", "field",
-                  "summary", "content_text", "file", "responsible", "processing_status", "deadline",
-                  "access_level", "allowed_users"]
-        widgets = {"summary": forms.Textarea(attrs={"rows": 2}), "content_text": forms.Textarea(attrs={"rows": 5}),
-                   "allowed_users": forms.SelectMultiple(attrs={"size": 6})}
+        fields = [
+            "direction",
+            "number",
+            "symbol",
+            "issue_date",
+            "issuer",
+            "issuer_text",
+            "doc_type",
+            "field",
+            "summary",
+            "content_text",
+            "file",
+            "responsible",
+            "processing_status",
+            "deadline",
+            "access_level",
+            "allowed_users",
+        ]
+        widgets = {
+            "summary": forms.Textarea(attrs={"rows": 2}),
+            "content_text": forms.Textarea(attrs={"rows": 5}),
+            "allowed_users": forms.SelectMultiple(attrs={"size": 6}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,8 +63,7 @@ class EducationPlanForm(BaseModelForm):
 
     class Meta:
         model = EducationPlan
-        fields = ["title", "level", "school_year", "group", "school_class", "parent", "period_start", "period_end",
-                  "content", "file"]
+        fields = ["title", "level", "school_year", "group", "school_class", "parent", "period_start", "period_end", "content", "file"]
         widgets = {"content": forms.Textarea(attrs={"rows": 14})}
 
     def __init__(self, *args, **kwargs):
@@ -138,8 +160,23 @@ class EvidenceForm(BaseModelForm):
 
     class Meta:
         model = Evidence
-        fields = ["code", "title", "category", "description", "source", "evidence_date", "responsible", "school_year",
-                  "campus", "group", "plan", "task", "criterion", "report_ref", "access_level"]
+        fields = [
+            "code",
+            "title",
+            "category",
+            "description",
+            "source",
+            "evidence_date",
+            "responsible",
+            "school_year",
+            "campus",
+            "group",
+            "plan",
+            "task",
+            "criterion",
+            "report_ref",
+            "access_level",
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

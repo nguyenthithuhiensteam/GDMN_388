@@ -1,0 +1,20 @@
+line-length = 140
+target-version = "py311"
+extend-exclude = ["*/migrations/*", "static", "staticfiles"]
+
+[lint]
+select = ["E", "F", "W", "B", "I", "DJ", "S"]
+ignore = [
+  "S101",  # assert trong kiểm thử
+  "S105", "S106",  # chuỗi mật khẩu giả trong kiểm thử/biến môi trường
+  "S308",  # mark_safe/format_html có kiểm soát
+  "B904",
+  "DJ001",
+]
+
+[lint.per-file-ignores]
+"*/tests/*" = ["S", "B"]
+"apps/core/management/commands/verify_backup.py" = ["S603"]
+
+[lint.isort]
+known-first-party = ["apps", "config"]

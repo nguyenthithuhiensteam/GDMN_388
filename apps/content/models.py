@@ -1,4 +1,5 @@
 """Nội dung website công khai: tin tức, thông báo, trang giới thiệu, album, tài liệu, công khai giáo dục."""
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
@@ -58,15 +59,16 @@ class Post(SluggedMixin, WorkflowModel):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, verbose_name="Danh mục", related_name="posts")
     summary = models.TextField("Tóm tắt", max_length=500, blank=True)
     body = models.TextField("Nội dung", help_text="Cho phép định dạng cơ bản; mã HTML nguy hiểm sẽ bị loại bỏ.")
-    thumbnail = models.ImageField("Ảnh đại diện", upload_to=UniqueUploadPath("posts"), blank=True,
-                                  validators=[validate_image_upload])
+    thumbnail = models.ImageField("Ảnh đại diện", upload_to=UniqueUploadPath("posts"), blank=True, validators=[validate_image_upload])
     thumbnail_consent = models.BooleanField(
-        "Ảnh đại diện không có trẻ em hoặc đã có sự đồng ý của cha mẹ trẻ", default=False,
+        "Ảnh đại diện không có trẻ em hoặc đã có sự đồng ý của cha mẹ trẻ",
+        default=False,
         help_text="Bắt buộc xác nhận nếu có ảnh đại diện trước khi xuất bản.",
     )
     is_featured = models.BooleanField("Hoạt động nổi bật", default=False)
-    group = models.ForeignKey("org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True,
-                              verbose_name="Tổ chuyên môn", related_name="+")
+    group = models.ForeignKey(
+        "org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Tổ chuyên môn", related_name="+"
+    )
     view_count = models.PositiveIntegerField("Lượt xem", default=0, editable=False)
 
     objects = PublishedQuerySet.as_manager()
@@ -107,12 +109,16 @@ class Announcement(SluggedMixin, WorkflowModel):
     title = models.CharField("Tiêu đề", max_length=255)
     kind = models.CharField("Loại thông báo", max_length=20, choices=KINDS, default="school", db_index=True)
     body = models.TextField("Nội dung")
-    attachment = models.FileField("Tệp đính kèm", upload_to=UniqueUploadPath("announcements"), blank=True,
-                                  storage=get_protected_storage, validators=[validate_document_upload])
+    attachment = models.FileField(
+        "Tệp đính kèm",
+        upload_to=UniqueUploadPath("announcements"),
+        blank=True,
+        storage=get_protected_storage,
+        validators=[validate_document_upload],
+    )
     event_date = models.DateTimeField("Thời gian diễn ra (nếu là lịch hoạt động)", null=True, blank=True)
     start_date = models.DateField("Hiển thị từ ngày", default=timezone.localdate)
-    end_date = models.DateField("Hết hạn hiển thị", null=True, blank=True,
-                                help_text="Để trống nếu không có thời hạn.")
+    end_date = models.DateField("Hết hạn hiển thị", null=True, blank=True, help_text="Để trống nếu không có thời hạn.")
     is_pinned = models.BooleanField("Ghim lên đầu", default=False)
 
     objects = PublishedQuerySet.as_manager()
@@ -135,16 +141,12 @@ class Announcement(SluggedMixin, WorkflowModel):
     @classmethod
     def visible(cls):
         today = timezone.localdate()
-        return cls.objects.published().filter(start_date__lte=today).filter(
-            Q(end_date__isnull=True) | Q(end_date__gte=today)
-        )
+        return cls.objects.published().filter(start_date__lte=today).filter(Q(end_date__isnull=True) | Q(end_date__gte=today))
 
     @property
     def is_active_now(self):
         today = timezone.localdate()
-        return self.status == Status.PUBLISHED and self.start_date <= today and (
-            self.end_date is None or self.end_date >= today
-        )
+        return self.status == Status.PUBLISHED and self.start_date <= today and (self.end_date is None or self.end_date >= today)
 
 
 class Page(SluggedMixin, WorkflowModel):
@@ -160,8 +162,7 @@ class Page(SluggedMixin, WorkflowModel):
     title = models.CharField("Tiêu đề", max_length=255)
     section = models.CharField("Mục", max_length=30, choices=SECTIONS, default="khac")
     body = models.TextField("Nội dung")
-    image = models.ImageField("Ảnh minh họa", upload_to=UniqueUploadPath("pages"), blank=True,
-                              validators=[validate_image_upload])
+    image = models.ImageField("Ảnh minh họa", upload_to=UniqueUploadPath("pages"), blank=True, validators=[validate_image_upload])
     order = models.PositiveIntegerField("Thứ tự", default=0)
 
     objects = PublishedQuerySet.as_manager()
@@ -209,14 +210,16 @@ class Album(SluggedMixin, WorkflowModel):
     VISIBILITY = [("public", "Công khai"), ("internal", "Nội bộ")]
     title = models.CharField("Tên album", max_length=255)
     kind = models.CharField("Loại album", max_length=10, choices=KINDS, default="event")
-    school_year = models.ForeignKey("org.SchoolYear", on_delete=models.SET_NULL, null=True, blank=True,
-                                    verbose_name="Năm học", related_name="+")
-    campus = models.ForeignKey("org.Campus", on_delete=models.SET_NULL, null=True, blank=True,
-                               verbose_name="Điểm trường", related_name="+")
-    school_class = models.ForeignKey("org.SchoolClass", on_delete=models.SET_NULL, null=True, blank=True,
-                                     verbose_name="Lớp", related_name="+")
-    group = models.ForeignKey("org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True,
-                              verbose_name="Tổ chuyên môn", related_name="+")
+    school_year = models.ForeignKey(
+        "org.SchoolYear", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Năm học", related_name="+"
+    )
+    campus = models.ForeignKey("org.Campus", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Điểm trường", related_name="+")
+    school_class = models.ForeignKey(
+        "org.SchoolClass", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Lớp", related_name="+"
+    )
+    group = models.ForeignKey(
+        "org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Tổ chuyên môn", related_name="+"
+    )
     event_date = models.DateField("Ngày sự kiện", null=True, blank=True)
     description = models.TextField("Mô tả", blank=True)
     visibility = models.CharField("Phạm vi", max_length=10, choices=VISIBILITY, default="public")
@@ -261,21 +264,26 @@ class MediaItem(models.Model):
     TYPES = [("image", "Ảnh"), ("video", "Video (liên kết)")]
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="items", verbose_name="Album")
     media_type = models.CharField("Loại", max_length=10, choices=TYPES, default="image")
-    image = models.ImageField("Ảnh", upload_to=UniqueUploadPath("album"), storage=get_protected_storage,
-                              blank=True, validators=[validate_image_upload])
+    image = models.ImageField(
+        "Ảnh", upload_to=UniqueUploadPath("album"), storage=get_protected_storage, blank=True, validators=[validate_image_upload]
+    )
     video_url = models.URLField("Liên kết video (YouTube)", blank=True)
     caption = models.CharField("Chú thích", max_length=255, blank=True)
     has_children = models.BooleanField("Có hình ảnh trẻ em", default=True)
-    consent_status = models.CharField("Quyền sử dụng hình ảnh", max_length=10, choices=CONSENT_CHOICES,
-                                      default=CONSENT_PENDING, db_index=True)
-    consent_note = models.CharField("Căn cứ xác nhận", max_length=255, blank=True,
-                                    help_text="Ví dụ: phiếu đồng ý của cha mẹ trẻ lưu tại văn phòng, số ...")
-    consent_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name="+", verbose_name="Người xác nhận")
+    consent_status = models.CharField(
+        "Quyền sử dụng hình ảnh", max_length=10, choices=CONSENT_CHOICES, default=CONSENT_PENDING, db_index=True
+    )
+    consent_note = models.CharField(
+        "Căn cứ xác nhận", max_length=255, blank=True, help_text="Ví dụ: phiếu đồng ý của cha mẹ trẻ lưu tại văn phòng, số ..."
+    )
+    consent_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Người xác nhận"
+    )
     consent_at = models.DateTimeField("Thời điểm xác nhận", null=True, blank=True)
     order = models.PositiveIntegerField("Thứ tự", default=0)
-    uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                    related_name="+", verbose_name="Người tải lên")
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+", verbose_name="Người tải lên"
+    )
     uploaded_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -308,8 +316,9 @@ class PublicDocument(WorkflowModel):
     title = models.CharField("Tên tài liệu", max_length=255)
     category = models.CharField("Danh mục", max_length=20, choices=CATEGORIES, default="khac")
     description = models.TextField("Mô tả", blank=True)
-    file = models.FileField("Tệp", upload_to=UniqueUploadPath("public_docs"), storage=get_protected_storage,
-                            validators=[validate_document_upload])
+    file = models.FileField(
+        "Tệp", upload_to=UniqueUploadPath("public_docs"), storage=get_protected_storage, validators=[validate_document_upload]
+    )
     download_count = models.PositiveIntegerField("Lượt tải", default=0, editable=False)
 
     objects = PublishedQuerySet.as_manager()
@@ -327,8 +336,12 @@ class DisclosureSection(models.Model):
     """Mục công khai giáo dục, cấu hình được để cập nhật theo quy định hiện hành."""
 
     name = models.CharField("Tên mục", max_length=255, unique=True)
-    legal_basis = models.CharField("Căn cứ (do nhà trường ghi)", max_length=255, blank=True,
-                                   help_text="Ghi căn cứ văn bản quy phạm hiện hành sau khi đã được kiểm tra.")
+    legal_basis = models.CharField(
+        "Căn cứ (do nhà trường ghi)",
+        max_length=255,
+        blank=True,
+        help_text="Ghi căn cứ văn bản quy phạm hiện hành sau khi đã được kiểm tra.",
+    )
     order = models.PositiveIntegerField("Thứ tự", default=0)
     is_active = models.BooleanField("Đang sử dụng", default=True)
 
@@ -343,24 +356,33 @@ class DisclosureSection(models.Model):
 
 class Disclosure(WorkflowModel):
     title = models.CharField("Tiêu đề", max_length=255)
-    section = models.ForeignKey(DisclosureSection, on_delete=models.PROTECT, verbose_name="Mục công khai",
-                                related_name="items")
-    school_year = models.ForeignKey("org.SchoolYear", on_delete=models.SET_NULL, null=True, blank=True,
-                                    verbose_name="Năm học", related_name="+")
+    section = models.ForeignKey(DisclosureSection, on_delete=models.PROTECT, verbose_name="Mục công khai", related_name="items")
+    school_year = models.ForeignKey(
+        "org.SchoolYear", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Năm học", related_name="+"
+    )
     description = models.TextField("Nội dung tóm tắt", blank=True)
-    file = models.FileField("Tệp công khai", upload_to=UniqueUploadPath("disclosures"), storage=get_protected_storage,
-                            blank=True, validators=[validate_document_upload])
+    file = models.FileField(
+        "Tệp công khai",
+        upload_to=UniqueUploadPath("disclosures"),
+        storage=get_protected_storage,
+        blank=True,
+        validators=[validate_document_upload],
+    )
     disclosure_date = models.DateField("Ngày công bố", null=True, blank=True)
     valid_until = models.DateField("Thời hạn công khai đến", null=True, blank=True)
     review_due = models.DateField("Hạn rà soát tiếp theo", null=True, blank=True)
-    responsible = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name="+", verbose_name="Người phụ trách")
+    responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Người phụ trách"
+    )
     authority_checked = models.BooleanField(
-        "Đã được người có thẩm quyền kiểm tra nội dung", default=False, editable=False,
+        "Đã được người có thẩm quyền kiểm tra nội dung",
+        default=False,
+        editable=False,
         help_text="Chỉ người có quyền duyệt mới xác nhận. Hệ thống không tự khẳng định tài liệu đáp ứng quy định.",
     )
-    authority_checked_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-                                             blank=True, related_name="+", editable=False)
+    authority_checked_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", editable=False
+    )
     authority_note = models.CharField("Ghi chú kiểm tra", max_length=500, blank=True, editable=False)
 
     objects = PublishedQuerySet.as_manager()
@@ -395,8 +417,7 @@ class Disclosure(WorkflowModel):
 class DisclosureVersion(models.Model):
     disclosure = models.ForeignKey(Disclosure, on_delete=models.CASCADE, related_name="versions")
     version_no = models.PositiveIntegerField("Phiên bản")
-    file = models.FileField("Tệp", upload_to=UniqueUploadPath("disclosures/history"), storage=get_protected_storage,
-                            blank=True)
+    file = models.FileField("Tệp", upload_to=UniqueUploadPath("disclosures/history"), storage=get_protected_storage, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     note = models.CharField("Ghi chú cập nhật", max_length=255, blank=True)
@@ -408,3 +429,6 @@ class DisclosureVersion(models.Model):
         constraints = [models.UniqueConstraint(fields=["disclosure", "version_no"], name="uniq_disclosure_version")]
         verbose_name = "Lịch sử công khai"
         verbose_name_plural = "Lịch sử công khai"
+
+    def __str__(self):
+        return f"{self.disclosure} v{self.version_no}"

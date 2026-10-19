@@ -1,5 +1,6 @@
 """Kiểm tra bản sao lưu: tính toàn vẹn (SHA-256), đọc được JSON, và (tùy chọn) khôi phục thử
 vào một CSDL SQLite tạm để chứng minh có thể phục hồi."""
+
 import hashlib
 import json
 import os
@@ -48,8 +49,13 @@ class Command(BaseCommand):
             db = Path(tmp) / "restore.sqlite3"
             fixture = Path(tmp) / "db.json"
             fixture.write_bytes(data)
-            env = {**os.environ, "DB_ENGINE": "sqlite", "SQLITE_PATH": str(db), "DJANGO_ENV": "development",
-                   "DJANGO_SECRET_KEY": "restore-test-only"}
+            env = {
+                **os.environ,
+                "DB_ENGINE": "sqlite",
+                "SQLITE_PATH": str(db),
+                "DJANGO_ENV": "development",
+                "DJANGO_SECRET_KEY": "restore-test-only",
+            }
             manage = Path(settings.BASE_DIR) / "manage.py"
             for cmd in (["migrate", "--noinput"], ["prepare_restore"], ["loaddata", str(fixture)]):
                 r = subprocess.run([sys.executable, str(manage), *cmd], env=env, capture_output=True, text=True)

@@ -4,7 +4,14 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.content.models import (
-    Album, Announcement, Category, Disclosure, DisclosureSection, MediaItem, Post, PublicDocument,
+    Album,
+    Announcement,
+    Category,
+    Disclosure,
+    DisclosureSection,
+    MediaItem,
+    Post,
+    PublicDocument,
 )
 from apps.core.models import AuditLog, ContactMessage, SiteSettings
 from apps.core.tests.base import BaseTestCase
@@ -18,8 +25,13 @@ class PostWorkflowTests(BaseTestCase):
 
     def _create_post(self, user, **kw):
         self.login(user)
-        data = {"title": "Ngày hội đến trường", "category": self.cat.pk, "summary": "Tóm tắt",
-                "body": "<p>Nội dung <script>alert(1)</script><strong>đậm</strong></p>", "group": ""}
+        data = {
+            "title": "Ngày hội đến trường",
+            "category": self.cat.pk,
+            "summary": "Tóm tắt",
+            "body": "<p>Nội dung <script>alert(1)</script><strong>đậm</strong></p>",
+            "group": "",
+        }
         data.update(kw)
         r = self.client.post(reverse("content:news_create"), data)
         self.assertEqual(r.status_code, 302, getattr(r, "context", None) and r.context["form"].errors)
@@ -114,8 +126,9 @@ class PostWorkflowTests(BaseTestCase):
 class AnnouncementTests(BaseTestCase):
     def test_expired_announcement_hidden(self):
         today = timezone.localdate()
-        a = Announcement.objects.create(title="Hết hạn", body="x", status=Status.PUBLISHED, start_date=today - timedelta(days=10),
-                                        end_date=today - timedelta(days=1))
+        a = Announcement.objects.create(
+            title="Hết hạn", body="x", status=Status.PUBLISHED, start_date=today - timedelta(days=10), end_date=today - timedelta(days=1)
+        )
         b = Announcement.objects.create(title="Còn hạn", body="x", status=Status.PUBLISHED, start_date=today)
         r = self.client.get(reverse("public:announcement_list"))
         self.assertContains(r, "Còn hạn")
@@ -136,8 +149,10 @@ class AnnouncementTests(BaseTestCase):
 
     def test_invalid_end_date(self):
         self.login(self.vice)
-        r = self.client.post(reverse("content:announcement_create"), {
-            "title": "T", "kind": "school", "body": "x", "start_date": "10/10/2026", "end_date": "01/10/2026"})
+        r = self.client.post(
+            reverse("content:announcement_create"),
+            {"title": "T", "kind": "school", "body": "x", "start_date": "10/10/2026", "end_date": "01/10/2026"},
+        )
         self.assertEqual(r.status_code, 200)
         self.assertFalse(Announcement.objects.filter(title="T").exists())
 
@@ -147,8 +162,10 @@ class AlbumConsentTests(BaseTestCase):
         self.login(self.teacher)
         self.client.post(reverse("content:album_create"), {"title": "Trung thu", "kind": "event", "visibility": "public"})
         album = Album.objects.get(title="Trung thu")
-        r = self.client.post(reverse("content:album_upload", args=[album.pk]),
-                             {"images": [png_file("a.png"), png_file("b.png")], "caption": "Vui", "has_children": "on"})
+        r = self.client.post(
+            reverse("content:album_upload", args=[album.pk]),
+            {"images": [png_file("a.png"), png_file("b.png")], "caption": "Vui", "has_children": "on"},
+        )
         self.assertEqual(r.status_code, 302)
         self.assertEqual(album.items.count(), 2)
         item = album.items.first()
@@ -162,8 +179,9 @@ class AlbumConsentTests(BaseTestCase):
         self.login(self.vice)
         r = self.client.post(reverse("content:media_consent", args=[item.pk]), {"consent_status": "approved", "consent_note": ""})
         self.assertEqual(r.status_code, 200)
-        self.client.post(reverse("content:media_consent", args=[item.pk]),
-                         {"consent_status": "approved", "consent_note": "Phiếu đồng ý lưu VP"})
+        self.client.post(
+            reverse("content:media_consent", args=[item.pk]), {"consent_status": "approved", "consent_note": "Phiếu đồng ý lưu VP"}
+        )
         item.refresh_from_db()
         self.assertEqual(item.consent_status, MediaItem.CONSENT_APPROVED)
         self.client.logout()
@@ -190,14 +208,25 @@ class DisclosureTests(BaseTestCase):
     def test_versions_and_authority_check(self):
         section = DisclosureSection.objects.first()
         self.login(self.office)
-        r = self.client.post(reverse("content:disclosure_create"), {
-            "title": "Công khai cơ sở vật chất", "section": section.pk, "description": "v1", "file": pdf_file(),
-            "disclosure_date": "01/10/2026", "review_due": "01/11/2026", "version_note": "Lần đầu"})
+        r = self.client.post(
+            reverse("content:disclosure_create"),
+            {
+                "title": "Công khai cơ sở vật chất",
+                "section": section.pk,
+                "description": "v1",
+                "file": pdf_file(),
+                "disclosure_date": "01/10/2026",
+                "review_due": "01/11/2026",
+                "version_note": "Lần đầu",
+            },
+        )
         self.assertEqual(r.status_code, 302)
         d = Disclosure.objects.get()
         self.assertEqual(d.versions.count(), 1)
-        self.client.post(reverse("content:disclosure_edit", args=[d.pk]), {
-            "title": "Công khai cơ sở vật chất", "section": section.pk, "description": "v2", "version_note": "Cập nhật"})
+        self.client.post(
+            reverse("content:disclosure_edit", args=[d.pk]),
+            {"title": "Công khai cơ sở vật chất", "section": section.pk, "description": "v2", "version_note": "Cập nhật"},
+        )
         self.assertEqual(d.versions.count(), 2)
         # Văn phòng không có quyền xác nhận kiểm tra
         self.assertEqual(self.client.post(reverse("content:disclosure_check", args=[d.pk]), {"confirmed": "on"}).status_code, 403)
@@ -250,8 +279,16 @@ class ContactFormTests(BaseTestCase):
 
         from django.core import signing
 
-        data = {"name": "Phụ huynh", "email": "ph@example.com", "phone": "", "subject": "Hỏi tuyển sinh",
-                "message": "Xin hỏi...", "agree": "on", "website": "", "ts": signing.dumps(time.time() - 10)}
+        data = {
+            "name": "Phụ huynh",
+            "email": "ph@example.com",
+            "phone": "",
+            "subject": "Hỏi tuyển sinh",
+            "message": "Xin hỏi...",
+            "agree": "on",
+            "website": "",
+            "ts": signing.dumps(time.time() - 10),
+        }
         data.update(kw)
         return data
 
@@ -273,6 +310,16 @@ class ContactFormTests(BaseTestCase):
 
     def test_home_and_public_pages_render(self):
         SiteSettings.load()
-        for name in ("home", "about", "staff", "post_list", "announcement_list", "admission", "disclosure_list",
-                     "album_list", "document_list", "search"):
+        for name in (
+            "home",
+            "about",
+            "staff",
+            "post_list",
+            "announcement_list",
+            "admission",
+            "disclosure_list",
+            "album_list",
+            "document_list",
+            "search",
+        ):
             self.assertEqual(self.client.get(reverse(f"public:{name}")).status_code, 200, name)

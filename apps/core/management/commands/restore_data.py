@@ -1,6 +1,7 @@
 """Khôi phục dữ liệu từ bản sao lưu ZIP vào CSDL hiện tại (CSDL phải mới, đã migrate, chưa có dữ liệu nghiệp vụ).
 
 CẢNH BÁO: thao tác ghi đè dữ liệu. Luôn chạy verify_backup --restore-test trước, và sao lưu hiện trạng."""
+
 import json
 import shutil
 import tempfile
@@ -39,7 +40,7 @@ class Command(BaseCommand):
                 for name in zf.namelist():
                     for label, root in (("media/", settings.MEDIA_ROOT), ("protected_media/", settings.PROTECTED_MEDIA_ROOT)):
                         if name.startswith(label) and not name.endswith("/"):
-                            rel = Path(name[len(label):])
+                            rel = Path(name[len(label) :])
                             if ".." in rel.parts or rel.is_absolute():
                                 raise CommandError(f"Đường dẫn không an toàn trong bản sao lưu: {name}")
                             dest = Path(root) / rel

@@ -55,8 +55,9 @@ class AIEnabledTests(BaseTestCase):
 
     @override_settings(AI_ALLOW_INTERNAL_DOCUMENTS=False)
     def test_internal_document_not_sent_when_disallowed(self):
-        doc = OfficialDocument.objects.create(number="1", issue_date="2026-10-01", summary="VB", issuer_text="X",
-                                              content_text="Nội dung nội bộ")
+        doc = OfficialDocument.objects.create(
+            number="1", issue_date="2026-10-01", summary="VB", issuer_text="X", content_text="Nội dung nội bộ"
+        )
         self.login(self.teacher)
         with mock.patch.object(service, "generate") as gen:
             r = self.client.post(reverse("ai:summarize") + f"?van_ban={doc.pk}", {"document_id": doc.pk})
@@ -65,10 +66,12 @@ class AIEnabledTests(BaseTestCase):
 
     @override_settings(AI_ALLOW_INTERNAL_DOCUMENTS=True)
     def test_restricted_document_never_sent_and_no_access_escalation(self):
-        restricted = OfficialDocument.objects.create(number="2", issue_date="2026-10-01", summary="Mật", issuer_text="X",
-                                                     access_level="restricted", created_by=self.principal)
-        managers = OfficialDocument.objects.create(number="3", issue_date="2026-10-01", summary="LĐ", issuer_text="X",
-                                                   access_level="managers")
+        restricted = OfficialDocument.objects.create(
+            number="2", issue_date="2026-10-01", summary="Mật", issuer_text="X", access_level="restricted", created_by=self.principal
+        )
+        managers = OfficialDocument.objects.create(
+            number="3", issue_date="2026-10-01", summary="LĐ", issuer_text="X", access_level="managers"
+        )
         self.login(self.teacher)
         self.assertEqual(self.client.get(reverse("ai:summarize") + f"?van_ban={restricted.pk}").status_code, 404)
         self.login(self.vice)

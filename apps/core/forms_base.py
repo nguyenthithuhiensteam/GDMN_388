@@ -1,4 +1,5 @@
 """Lớp form cơ sở: tự gắn class Bootstrap, định dạng ngày dd/mm/yyyy, nhận user."""
+
 from django import forms
 
 DATE_FORMAT = "%d/%m/%Y"
@@ -20,7 +21,7 @@ class VNDateTimeInput(forms.DateTimeInput):
 
 
 def style_fields(form):
-    for name, field in form.fields.items():
+    for field in form.fields.values():
         w = field.widget
         if isinstance(field, forms.DateTimeField) and not isinstance(w, VNDateTimeInput):
             field.widget = w = VNDateTimeInput()

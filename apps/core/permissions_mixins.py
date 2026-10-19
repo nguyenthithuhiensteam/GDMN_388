@@ -1,4 +1,5 @@
 """Mixin/decorator kiểm tra quyền phía máy chủ cho view."""
+
 from functools import wraps
 
 from django.contrib.auth.mixins import LoginRequiredMixin

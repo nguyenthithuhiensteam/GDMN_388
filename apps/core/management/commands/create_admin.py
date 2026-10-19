@@ -3,6 +3,7 @@
 Mật khẩu được nhập ẩn qua bàn phím (không lưu trong lịch sử lệnh) và phải đạt chính sách mật khẩu.
 Chỉ dùng biến môi trường ADMIN_PASSWORD trong kịch bản tự động hóa có kiểm soát, và xóa biến ngay sau đó.
 """
+
 import getpass
 import os
 

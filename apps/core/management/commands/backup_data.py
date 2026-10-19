@@ -3,6 +3,7 @@
 Với PostgreSQL, nên kết hợp pg_dump (xem deploy/backup.sh). Bản sao lưu chứa dữ liệu nội bộ:
 cần lưu trữ ở nơi an toàn, giới hạn quyền truy cập, và mã hóa khi chuyển ra ngoài máy chủ.
 """
+
 import hashlib
 import io
 import json

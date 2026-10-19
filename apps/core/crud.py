@@ -4,6 +4,7 @@ Khung CRUD dùng chung cho khu vực quản trị. Mọi view đều:
 - kiểm tra quyền theo đối tượng khi sửa/xóa (người tạo, cùng tổ, hoặc phạm vi toàn trường);
 - ghi nhật ký tạo/sửa/xóa.
 """
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db.models import ProtectedError, Q
@@ -83,8 +84,7 @@ class AdminListView(AdminContextMixin, ModulePermissionMixin, ListView):
                 options = [(str(o.pk), str(o)) for o in field.related_model.objects.all()[:200]]
             else:
                 continue
-            result.append({"name": name, "label": field.verbose_name, "options": options,
-                           "value": self.request.GET.get(name, "")})
+            result.append({"name": name, "label": field.verbose_name, "options": options, "value": self.request.GET.get(name, "")})
         return result
 
     def get_context_data(self, **kwargs):

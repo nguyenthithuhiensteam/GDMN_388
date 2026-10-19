@@ -1,4 +1,5 @@
 """Website công khai: chỉ hiển thị nội dung đã xuất bản."""
+
 from itertools import groupby
 
 from django.contrib.auth.decorators import login_required
@@ -15,7 +16,16 @@ from apps.core.workflow import Status
 from apps.org.models import Campus
 
 from .models import (
-    Album, Announcement, Category, Disclosure, DisclosureSection, MediaItem, Page, Post, PublicDocument, StaffProfile,
+    Album,
+    Announcement,
+    Category,
+    Disclosure,
+    DisclosureSection,
+    MediaItem,
+    Page,
+    Post,
+    PublicDocument,
+    StaffProfile,
 )
 
 
@@ -25,15 +35,19 @@ def _paginate(request, qs, per_page=9):
 
 def home(request):
     posts = Post.objects.published().select_related("category")
-    return render(request, "public/home.html", {
-        "latest_posts": posts[:6],
-        "featured_posts": posts.filter(is_featured=True)[:3],
-        "announcements": Announcement.visible()[:5],
-        "urgent": Announcement.visible().filter(kind="urgent")[:3],
-        "albums": Album.objects.published().filter(visibility="public")[:4],
-        "admission": Announcement.visible().filter(kind="admission").first(),
-        "program_page": Page.objects.published().filter(section="chuong-trinh").first(),
-    })
+    return render(
+        request,
+        "public/home.html",
+        {
+            "latest_posts": posts[:6],
+            "featured_posts": posts.filter(is_featured=True)[:3],
+            "announcements": Announcement.visible()[:5],
+            "urgent": Announcement.visible().filter(kind="urgent")[:3],
+            "albums": Album.objects.published().filter(visibility="public")[:4],
+            "admission": Announcement.visible().filter(kind="admission").first(),
+            "program_page": Page.objects.published().filter(section="chuong-trinh").first(),
+        },
+    )
 
 
 def post_list(request):
@@ -46,9 +60,16 @@ def post_list(request):
         qs = qs.filter(category=category) if category else qs.none()
     if q:
         qs = qs.filter(Q(title__icontains=q) | Q(summary__icontains=q) | Q(body__icontains=q))
-    return render(request, "public/post_list.html", {
-        "page_obj": _paginate(request, qs), "categories": Category.objects.all(), "q": q, "category": category,
-    })
+    return render(
+        request,
+        "public/post_list.html",
+        {
+            "page_obj": _paginate(request, qs),
+            "categories": Category.objects.all(),
+            "q": q,
+            "category": category,
+        },
+    )
 
 
 def post_detail(request, slug):
@@ -63,9 +84,15 @@ def announcement_list(request):
     kind = request.GET.get("loai", "")
     if kind in dict(Announcement.KINDS):
         qs = qs.filter(kind=kind)
-    return render(request, "public/announcement_list.html", {
-        "page_obj": _paginate(request, qs, 12), "kinds": Announcement.KINDS, "kind": kind,
-    })
+    return render(
+        request,
+        "public/announcement_list.html",
+        {
+            "page_obj": _paginate(request, qs, 12),
+            "kinds": Announcement.KINDS,
+            "kind": kind,
+        },
+    )
 
 
 def announcement_detail(request, slug):
@@ -83,19 +110,28 @@ def announcement_attachment(request, slug):
 
 
 def admission(request):
-    return render(request, "public/admission.html", {
-        "pages": Page.objects.published().filter(section="tuyen-sinh"),
-        "announcements": Announcement.visible().filter(kind="admission"),
-    })
+    return render(
+        request,
+        "public/admission.html",
+        {
+            "pages": Page.objects.published().filter(section="tuyen-sinh"),
+            "announcements": Announcement.visible().filter(kind="admission"),
+        },
+    )
 
 
 def about(request):
     pages = Page.objects.published().exclude(section="khac").order_by("section", "order")
     labels = dict(Page.SECTIONS)
     sections = [(labels.get(k, k), list(g)) for k, g in groupby(pages, key=lambda p: p.section)]
-    return render(request, "public/about.html", {
-        "sections": sections, "campuses": Campus.objects.filter(is_active=True),
-    })
+    return render(
+        request,
+        "public/about.html",
+        {
+            "sections": sections,
+            "campuses": Campus.objects.filter(is_active=True),
+        },
+    )
 
 
 def staff(request):
@@ -154,9 +190,16 @@ def document_list(request):
     q = request.GET.get("q", "").strip()
     if q:
         qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q))
-    return render(request, "public/document_list.html", {
-        "page_obj": _paginate(request, qs, 20), "categories": PublicDocument.CATEGORIES, "cat": cat, "q": q,
-    })
+    return render(
+        request,
+        "public/document_list.html",
+        {
+            "page_obj": _paginate(request, qs, 20),
+            "categories": PublicDocument.CATEGORIES,
+            "cat": cat,
+            "q": q,
+        },
+    )
 
 
 def document_download(request, pk):
@@ -187,9 +230,7 @@ def preview(request, kind, pk):
         raise Http404
     model, module = PREVIEW_MODELS[kind]
     obj = get_object_or_404(model, pk=pk)
-    if not has_perm(request.user, module, "view") or not (
-        has_full_scope(request.user) or owns_or_scoped(request.user, obj)
-    ):
+    if not has_perm(request.user, module, "view") or not (has_full_scope(request.user) or owns_or_scoped(request.user, obj)):
         raise PermissionDenied
     ctx = {"preview": True}
     if model is Post:

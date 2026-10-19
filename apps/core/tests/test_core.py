@@ -46,8 +46,11 @@ class SettingsTests(BaseTestCase):
     def test_admin_updates_school_name_and_colors(self):
         self.login(self.admin)
         s = SiteSettings.load()
-        data = {f.name: getattr(s, f.name) for f in SiteSettings._meta.fields
-                if f.editable and f.name not in ("id", "logo", "banner", "updated_at", "demo_data_loaded")}
+        data = {
+            f.name: getattr(s, f.name)
+            for f in SiteSettings._meta.fields
+            if f.editable and f.name not in ("id", "logo", "banner", "updated_at", "demo_data_loaded")
+        }
         data.update(school_name="TRƯỜNG MẦM NON HOA SEN", color_primary="#112233", map_embed_url="")
         data = {k: ("on" if v is True else "" if v in (False, None) else v) for k, v in data.items()}
         r = self.client.post(reverse("core:settings"), data)

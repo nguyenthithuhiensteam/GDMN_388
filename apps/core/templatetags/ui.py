@@ -25,9 +25,11 @@ def cell(obj, attr):
     if callable(value) and not isinstance(value, Model):
         value = value()
     if isinstance(value, bool):
-        return format_html('<i class="bi {}" aria-label="{}"></i>',
-                           "bi-check-circle-fill text-success" if value else "bi-dash text-muted",
-                           "Có" if value else "Không")
+        return format_html(
+            '<i class="bi {}" aria-label="{}"></i>',
+            "bi-check-circle-fill text-success" if value else "bi-dash text-muted",
+            "Có" if value else "Không",
+        )
     if isinstance(value, dt.datetime):
         return timezone.localtime(value).strftime("%d/%m/%Y %H:%M") if timezone.is_aware(value) else value.strftime("%d/%m/%Y %H:%M")
     if isinstance(value, dt.date):

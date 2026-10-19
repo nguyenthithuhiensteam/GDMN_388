@@ -22,11 +22,21 @@ urlpatterns = [
         ),
         name="password_reset",
     ),
-    path("quen-mat-khau/da-gui/", auth_views.PasswordResetDoneView.as_view(
-        template_name="accounts/password_reset_done.html"), name="password_reset_done"),
-    path("dat-lai/<uidb64>/<token>/", auth_views.PasswordResetConfirmView.as_view(
-        template_name="accounts/password_reset_confirm.html",
-        success_url=reverse_lazy("accounts:password_reset_complete")), name="password_reset_confirm"),
-    path("dat-lai/hoan-tat/", auth_views.PasswordResetCompleteView.as_view(
-        template_name="accounts/password_reset_complete.html"), name="password_reset_complete"),
+    path(
+        "quen-mat-khau/da-gui/",
+        auth_views.PasswordResetDoneView.as_view(template_name="accounts/password_reset_done.html"),
+        name="password_reset_done",
+    ),
+    path(
+        "dat-lai/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="accounts/password_reset_confirm.html", success_url=reverse_lazy("accounts:password_reset_complete")
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "dat-lai/hoan-tat/",
+        auth_views.PasswordResetCompleteView.as_view(template_name="accounts/password_reset_complete.html"),
+        name="password_reset_complete",
+    ),
 ]

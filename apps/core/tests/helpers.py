@@ -1,4 +1,5 @@
 """Hàm hỗ trợ kiểm thử."""
+
 import io
 from datetime import date
 

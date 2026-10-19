@@ -1,4 +1,5 @@
 """Áp dụng chính sách lưu giữ dữ liệu (chạy định kỳ). Thời hạn cấu hình bằng biến môi trường."""
+
 import os
 from datetime import timedelta
 
@@ -22,11 +23,15 @@ class Command(BaseCommand):
         from apps.core.models import AuditLog, ContactMessage, Notification
 
         now = timezone.now()
+
+        def before(env_name, default):
+            return now - timedelta(days=_days(env_name, default))
+
         rules = [
-            ("Lịch sử đăng nhập", LoginAttempt.objects.filter(created_at__lt=now - timedelta(days=_days("RETENTION_LOGIN_DAYS", 180)))),
-            ("Nhắc việc đã đọc", Notification.objects.filter(is_read=True, created_at__lt=now - timedelta(days=_days("RETENTION_NOTIFICATION_DAYS", 180)))),
-            ("Liên hệ đã xử lý", ContactMessage.objects.filter(status="done", created_at__lt=now - timedelta(days=_days("RETENTION_CONTACT_DAYS", 730)))),
-            ("Nhật ký hệ thống", AuditLog.objects.filter(created_at__lt=now - timedelta(days=_days("RETENTION_AUDIT_DAYS", 1825)))),
+            ("Lịch sử đăng nhập", LoginAttempt.objects.filter(created_at__lt=before("RETENTION_LOGIN_DAYS", 180))),
+            ("Nhắc việc đã đọc", Notification.objects.filter(is_read=True, created_at__lt=before("RETENTION_NOTIFICATION_DAYS", 180))),
+            ("Liên hệ đã xử lý", ContactMessage.objects.filter(status="done", created_at__lt=before("RETENTION_CONTACT_DAYS", 730))),
+            ("Nhật ký hệ thống", AuditLog.objects.filter(created_at__lt=before("RETENTION_AUDIT_DAYS", 1825))),
             ("Phiên hết hạn", Session.objects.filter(expire_date__lt=now)),
         ]
         for label, qs in rules:

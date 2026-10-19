@@ -1,4 +1,5 @@
 """Cơ cấu tổ chức: năm học, điểm trường, tổ chuyên môn, lớp, danh mục chuyên môn."""
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -17,14 +18,14 @@ class SchoolYear(models.Model):
     def __str__(self):
         return self.name
 
-    def clean(self):
-        if self.start_date and self.end_date and self.end_date <= self.start_date:
-            raise ValidationError("Ngày kết thúc phải sau ngày bắt đầu.")
-
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.is_current:
             SchoolYear.objects.exclude(pk=self.pk).filter(is_current=True).update(is_current=False)
+
+    def clean(self):
+        if self.start_date and self.end_date and self.end_date <= self.start_date:
+            raise ValidationError("Ngày kết thúc phải sau ngày bắt đầu.")
 
     @classmethod
     def current(cls):
@@ -77,8 +78,12 @@ class SchoolClass(models.Model):
     school_year = models.ForeignKey(SchoolYear, on_delete=models.PROTECT, verbose_name="Năm học", related_name="classes")
     campus = models.ForeignKey(Campus, on_delete=models.PROTECT, verbose_name="Điểm trường", related_name="classes")
     group = models.ForeignKey(
-        ProfessionalGroup, on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name="Tổ chuyên môn", related_name="classes",
+        ProfessionalGroup,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Tổ chuyên môn",
+        related_name="classes",
     )
     age_group = models.CharField("Độ tuổi", max_length=10, choices=AGE_GROUPS)
     is_active = models.BooleanField("Đang hoạt động", default=True)

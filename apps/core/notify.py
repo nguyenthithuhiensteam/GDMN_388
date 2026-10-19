@@ -1,4 +1,5 @@
 """Nhắc việc qua giao diện; gửi email nếu đã cấu hình EMAIL_NOTIFICATIONS_ENABLED."""
+
 import logging
 
 from django.conf import settings

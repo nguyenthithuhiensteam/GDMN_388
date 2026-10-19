@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 """Tiện ích dòng lệnh Django."""
+
 import os
 import sys
 

@@ -13,12 +13,20 @@ class User(AbstractUser):
     position = models.CharField("Chức vụ", max_length=150, blank=True)
     phone = models.CharField("Điện thoại", max_length=30, blank=True)
     campus = models.ForeignKey(
-        "org.Campus", on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name="Điểm trường", related_name="users",
+        "org.Campus",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Điểm trường",
+        related_name="users",
     )
     group = models.ForeignKey(
-        "org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name="Tổ chuyên môn", related_name="members",
+        "org.ProfessionalGroup",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Tổ chuyên môn",
+        related_name="members",
     )
     classes = models.ManyToManyField("org.SchoolClass", blank=True, verbose_name="Lớp phụ trách", related_name="teachers")
     must_change_password = models.BooleanField("Bắt buộc đổi mật khẩu", default=False)
@@ -72,6 +80,9 @@ class LoginAttempt(models.Model):
         verbose_name = "Lần đăng nhập"
         verbose_name_plural = "Lịch sử đăng nhập"
 
+    def __str__(self):
+        return f"{self.username} {self.created_at:%d/%m/%Y %H:%M} {'OK' if self.successful else 'FAIL'}"
+
 
 class UserSession(models.Model):
     """Theo dõi phiên đăng nhập để người dùng/quản trị có thể thu hồi phiên."""
@@ -87,3 +98,6 @@ class UserSession(models.Model):
         ordering = ["-last_seen"]
         verbose_name = "Phiên đăng nhập"
         verbose_name_plural = "Phiên đăng nhập"
+
+    def __str__(self):
+        return f"{self.user} {self.ip_address or ''}"

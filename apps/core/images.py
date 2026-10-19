@@ -1,4 +1,5 @@
 """Tối ưu ảnh tải lên: thu nhỏ kích thước, xóa dữ liệu EXIF (có thể chứa vị trí GPS)."""
+
 import io
 import os
 

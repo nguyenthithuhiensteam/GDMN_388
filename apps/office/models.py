@@ -1,11 +1,17 @@
 """Nghiệp vụ nội bộ: văn bản, kế hoạch giáo dục, nhiệm vụ, minh chứng."""
+
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 
 from apps.accounts.permissions import (
-    MANAGER_ROLES, ROLE_ADMIN, ROLE_GROUP_LEADER, ROLE_OFFICE, ROLE_PRINCIPAL, has_full_scope,
+    MANAGER_ROLES,
+    ROLE_ADMIN,
+    ROLE_GROUP_LEADER,
+    ROLE_OFFICE,
+    ROLE_PRINCIPAL,
+    has_full_scope,
 )
 from apps.core.storage import UniqueUploadPath, get_protected_storage
 from apps.core.validators import validate_document_upload
@@ -39,24 +45,52 @@ class OfficialDocument(TimeStampedByModel):
     number = models.CharField("Số", max_length=30, db_index=True)
     symbol = models.CharField("Ký hiệu", max_length=60, blank=True, db_index=True)
     issue_date = models.DateField("Ngày ban hành", db_index=True)
-    issuer = models.ForeignKey("org.Catalog", on_delete=models.PROTECT, null=True, blank=True, related_name="+",
-                               limit_choices_to={"kind": "issuer"}, verbose_name="Cơ quan ban hành")
+    issuer = models.ForeignKey(
+        "org.Catalog",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        limit_choices_to={"kind": "issuer"},
+        verbose_name="Cơ quan ban hành",
+    )
     issuer_text = models.CharField("Cơ quan ban hành (nếu chưa có trong danh mục)", max_length=200, blank=True)
-    doc_type = models.ForeignKey("org.Catalog", on_delete=models.PROTECT, null=True, blank=True, related_name="+",
-                                 limit_choices_to={"kind": "doc_type"}, verbose_name="Loại văn bản")
-    field = models.ForeignKey("org.Catalog", on_delete=models.PROTECT, null=True, blank=True, related_name="+",
-                              limit_choices_to={"kind": "field"}, verbose_name="Lĩnh vực")
+    doc_type = models.ForeignKey(
+        "org.Catalog",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        limit_choices_to={"kind": "doc_type"},
+        verbose_name="Loại văn bản",
+    )
+    field = models.ForeignKey(
+        "org.Catalog",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        limit_choices_to={"kind": "field"},
+        verbose_name="Lĩnh vực",
+    )
     summary = models.CharField("Trích yếu", max_length=500)
     content_text = models.TextField("Nội dung chính (phục vụ tìm kiếm)", blank=True)
-    file = models.FileField("Tệp đính kèm", upload_to=UniqueUploadPath("official_docs"), storage=get_protected_storage,
-                            blank=True, validators=[validate_document_upload])
-    responsible = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name="+", verbose_name="Người phụ trách")
+    file = models.FileField(
+        "Tệp đính kèm",
+        upload_to=UniqueUploadPath("official_docs"),
+        storage=get_protected_storage,
+        blank=True,
+        validators=[validate_document_upload],
+    )
+    responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Người phụ trách"
+    )
     processing_status = models.CharField("Trạng thái xử lý", max_length=20, choices=STATUSES, default="new", db_index=True)
     deadline = models.DateField("Hạn xử lý", null=True, blank=True)
     access_level = models.CharField("Phạm vi truy cập", max_length=20, choices=ACCESS_LEVELS, default="all")
-    allowed_users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="+",
-                                           verbose_name="Người được xem (khi chỉ định)")
+    allowed_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="+", verbose_name="Người được xem (khi chỉ định)"
+    )
 
     objects = OfficialDocumentQuerySet.as_manager()
 
@@ -86,10 +120,10 @@ class PlanExportTemplate(models.Model):
     """Mẫu xuất kế hoạch (Word/PDF): phần đầu, phần chữ ký... cấu hình được."""
 
     name = models.CharField("Tên mẫu", max_length=150, unique=True)
-    header_left = models.TextField("Phần đầu bên trái", blank=True,
-                                   help_text="Ví dụ: tên cơ quan chủ quản, tên trường. Mỗi dòng một dòng.")
-    header_right = models.TextField("Phần đầu bên phải", blank=True,
-                                    default="CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc")
+    header_left = models.TextField("Phần đầu bên trái", blank=True, help_text="Ví dụ: tên cơ quan chủ quản, tên trường. Mỗi dòng một dòng.")
+    header_right = models.TextField(
+        "Phần đầu bên phải", blank=True, default="CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc"
+    )
     title_prefix = models.CharField("Tiền tố tiêu đề", max_length=100, blank=True, default="KẾ HOẠCH")
     signature_title = models.CharField("Chức danh ký", max_length=150, blank=True, default="HIỆU TRƯỞNG")
     footer_note = models.TextField("Nơi nhận / ghi chú cuối", blank=True)
@@ -142,26 +176,47 @@ class EducationPlan(TimeStampedByModel):
         ("official", "Chính thức (ban hành)"),
         ("archived", "Lưu trữ"),
     ]
-    BADGES = {"draft": "secondary", "consulting": "info", "pending": "warning", "approved": "primary",
-              "official": "success", "archived": "light"}
+    BADGES = {
+        "draft": "secondary",
+        "consulting": "info",
+        "pending": "warning",
+        "approved": "primary",
+        "official": "success",
+        "archived": "light",
+    }
 
     title = models.CharField("Tên kế hoạch", max_length=255)
     level = models.CharField("Cấp kế hoạch", max_length=10, choices=LEVELS, db_index=True)
     school_year = models.ForeignKey("org.SchoolYear", on_delete=models.PROTECT, verbose_name="Năm học", related_name="plans")
-    group = models.ForeignKey("org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True,
-                              verbose_name="Tổ chuyên môn", related_name="plans")
-    school_class = models.ForeignKey("org.SchoolClass", on_delete=models.SET_NULL, null=True, blank=True,
-                                     verbose_name="Lớp", related_name="plans")
-    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children",
-                               verbose_name="Thuộc kế hoạch")
+    group = models.ForeignKey(
+        "org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Tổ chuyên môn", related_name="plans"
+    )
+    school_class = models.ForeignKey(
+        "org.SchoolClass", on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Lớp", related_name="plans"
+    )
+    parent = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, blank=True, related_name="children", verbose_name="Thuộc kế hoạch"
+    )
     period_start = models.DateField("Từ ngày", null=True, blank=True)
     period_end = models.DateField("Đến ngày", null=True, blank=True)
     content = models.TextField("Nội dung kế hoạch", blank=True)
-    file = models.FileField("Tệp kế hoạch", upload_to=UniqueUploadPath("plans"), storage=get_protected_storage,
-                            blank=True, validators=[validate_document_upload])
+    file = models.FileField(
+        "Tệp kế hoạch",
+        upload_to=UniqueUploadPath("plans"),
+        storage=get_protected_storage,
+        blank=True,
+        validators=[validate_document_upload],
+    )
     status = models.CharField("Trạng thái", max_length=20, choices=STATUSES, default="draft", db_index=True)
-    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name="+", editable=False, verbose_name="Người duyệt")
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        editable=False,
+        verbose_name="Người duyệt",
+    )
     approved_at = models.DateTimeField("Thời điểm duyệt", null=True, blank=True, editable=False)
     official_at = models.DateTimeField("Thời điểm ban hành", null=True, blank=True, editable=False)
 
@@ -203,6 +258,9 @@ class PlanVersion(models.Model):
         ordering = ["-version_no"]
         constraints = [models.UniqueConstraint(fields=["plan", "version_no"], name="uniq_plan_version")]
 
+    def __str__(self):
+        return f"{self.plan} v{self.version_no}"
+
 
 class PlanComment(models.Model):
     plan = models.ForeignKey(EducationPlan, on_delete=models.CASCADE, related_name="comments")
@@ -214,10 +272,14 @@ class PlanComment(models.Model):
     class Meta:
         ordering = ["created_at"]
 
+    # ---------------------------------------------------------------------------
+    # Nhiệm vụ
+    # ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# Nhiệm vụ
-# ---------------------------------------------------------------------------
+    def __str__(self):
+        return f"{self.user}: {self.content[:50]}"
+
+
 class TaskQuerySet(models.QuerySet):
     def for_user(self, user):
         if has_full_scope(user):
@@ -250,20 +312,36 @@ class Task(TimeStampedByModel):
 
     title = models.CharField("Tên nhiệm vụ", max_length=255)
     description = models.TextField("Mô tả công việc", blank=True)
-    assignee = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                 related_name="assigned_tasks", verbose_name="Người phụ trách")
-    assigned_group = models.ForeignKey("org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True,
-                                       related_name="tasks", verbose_name="Giao cho tổ")
-    assigned_campus = models.ForeignKey("org.Campus", on_delete=models.SET_NULL, null=True, blank=True,
-                                        related_name="tasks", verbose_name="Giao cho điểm trường")
+    assignee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_tasks",
+        verbose_name="Người phụ trách",
+    )
+    assigned_group = models.ForeignKey(
+        "org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks", verbose_name="Giao cho tổ"
+    )
+    assigned_campus = models.ForeignKey(
+        "org.Campus", on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks", verbose_name="Giao cho điểm trường"
+    )
     due_date = models.DateField("Thời hạn", null=True, blank=True, db_index=True)
     priority = models.CharField("Mức ưu tiên", max_length=10, choices=PRIORITIES, default="normal")
     status = models.CharField("Trạng thái", max_length=20, choices=STATUSES, default="todo", db_index=True)
-    plan = models.ForeignKey(EducationPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks",
-                             verbose_name="Thuộc kế hoạch")
+    plan = models.ForeignKey(
+        EducationPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name="tasks", verbose_name="Thuộc kế hoạch"
+    )
     completed_at = models.DateTimeField("Hoàn thành lúc", null=True, blank=True, editable=False)
-    confirmed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                     related_name="+", editable=False, verbose_name="Người xác nhận")
+    confirmed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        editable=False,
+        verbose_name="Người xác nhận",
+    )
 
     objects = TaskQuerySet.as_manager()
 
@@ -312,11 +390,15 @@ class TaskComment(models.Model):
     class Meta:
         ordering = ["created_at"]
 
+    def __str__(self):
+        return f"{self.user}: {self.content[:50]}"
+
 
 class TaskAttachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="attachments")
-    file = models.FileField("Minh chứng", upload_to=UniqueUploadPath("tasks"), storage=get_protected_storage,
-                            validators=[validate_document_upload])
+    file = models.FileField(
+        "Minh chứng", upload_to=UniqueUploadPath("tasks"), storage=get_protected_storage, validators=[validate_document_upload]
+    )
     original_name = models.CharField(max_length=255, blank=True)
     description = models.CharField("Mô tả", max_length=255, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
@@ -325,15 +407,20 @@ class TaskAttachment(models.Model):
     class Meta:
         ordering = ["-uploaded_at"]
 
+    # ---------------------------------------------------------------------------
+    # Minh chứng
+    # ---------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------
-# Minh chứng
-# ---------------------------------------------------------------------------
+    def __str__(self):
+        return self.original_name or f"#{self.pk}"
+
+
 class EvidenceCategory(models.Model):
     code = models.CharField("Mã", max_length=30, unique=True)
     name = models.CharField("Tên danh mục / tiêu chí", max_length=255)
-    parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="children",
-                               verbose_name="Danh mục cha")
+    parent = models.ForeignKey(
+        "self", on_delete=models.PROTECT, null=True, blank=True, related_name="children", verbose_name="Danh mục cha"
+    )
     description = models.TextField("Mô tả", blank=True)
     order = models.PositiveIntegerField("Thứ tự", default=0)
 
@@ -362,27 +449,31 @@ class EvidenceQuerySet(models.QuerySet):
 class Evidence(TimeStampedByModel):
     code = models.CharField("Mã minh chứng", max_length=50, unique=True)
     title = models.CharField("Tên minh chứng", max_length=255)
-    category = models.ForeignKey(EvidenceCategory, on_delete=models.PROTECT, related_name="evidences",
-                                 verbose_name="Danh mục / tiêu chí")
+    category = models.ForeignKey(EvidenceCategory, on_delete=models.PROTECT, related_name="evidences", verbose_name="Danh mục / tiêu chí")
     description = models.TextField("Mô tả", blank=True)
     source = models.CharField("Nguồn / nơi ban hành", max_length=255, blank=True)
     evidence_date = models.DateField("Ngày tạo minh chứng", null=True, blank=True)
-    responsible = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name="+", verbose_name="Người phụ trách")
-    school_year = models.ForeignKey("org.SchoolYear", on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
-                                    verbose_name="Năm học")
-    campus = models.ForeignKey("org.Campus", on_delete=models.SET_NULL, null=True, blank=True, related_name="+",
-                               verbose_name="Điểm trường")
-    group = models.ForeignKey("org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True,
-                              related_name="+", verbose_name="Tổ chuyên môn")
-    plan = models.ForeignKey(EducationPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name="evidences",
-                             verbose_name="Gắn với kế hoạch")
-    task = models.ForeignKey(Task, on_delete=models.SET_NULL, null=True, blank=True, related_name="evidences",
-                             verbose_name="Gắn với nhiệm vụ")
+    responsible = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Người phụ trách"
+    )
+    school_year = models.ForeignKey(
+        "org.SchoolYear", on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Năm học"
+    )
+    campus = models.ForeignKey("org.Campus", on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Điểm trường")
+    group = models.ForeignKey(
+        "org.ProfessionalGroup", on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Tổ chuyên môn"
+    )
+    plan = models.ForeignKey(
+        EducationPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name="evidences", verbose_name="Gắn với kế hoạch"
+    )
+    task = models.ForeignKey(
+        Task, on_delete=models.SET_NULL, null=True, blank=True, related_name="evidences", verbose_name="Gắn với nhiệm vụ"
+    )
     criterion = models.CharField("Tiêu chí / chỉ báo", max_length=255, blank=True)
     report_ref = models.CharField("Báo cáo liên quan", max_length=255, blank=True)
-    access_level = models.CharField("Phạm vi truy cập", max_length=20,
-                                    choices=[c for c in ACCESS_LEVELS if c[0] != "restricted"], default="all")
+    access_level = models.CharField(
+        "Phạm vi truy cập", max_length=20, choices=[c for c in ACCESS_LEVELS if c[0] != "restricted"], default="all"
+    )
 
     objects = EvidenceQuerySet.as_manager()
 
@@ -404,8 +495,9 @@ class EvidenceFile(models.Model):
 
     evidence = models.ForeignKey(Evidence, on_delete=models.CASCADE, related_name="files")
     version_no = models.PositiveIntegerField("Phiên bản")
-    file = models.FileField("Tệp", upload_to=UniqueUploadPath("evidence"), storage=get_protected_storage,
-                            validators=[validate_document_upload])
+    file = models.FileField(
+        "Tệp", upload_to=UniqueUploadPath("evidence"), storage=get_protected_storage, validators=[validate_document_upload]
+    )
     original_name = models.CharField(max_length=255, blank=True)
     note = models.CharField("Ghi chú", max_length=255, blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="+")
@@ -414,3 +506,6 @@ class EvidenceFile(models.Model):
     class Meta:
         ordering = ["-version_no"]
         constraints = [models.UniqueConstraint(fields=["evidence", "version_no"], name="uniq_evidence_version")]
+
+    def __str__(self):
+        return f"{self.evidence.code} v{self.version_no}"

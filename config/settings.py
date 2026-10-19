@@ -6,8 +6,9 @@ biến môi trường hoặc tệp .env (không đưa vào Git). Xem .env.exampl
 
 DJANGO_ENV: development | testing | production
 """
-from pathlib import Path
+
 import os
+from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 

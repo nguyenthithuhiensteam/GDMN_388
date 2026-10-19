@@ -1,10 +1,11 @@
 """View quản lý văn bản, kế hoạch giáo dục, nhiệm vụ và minh chứng."""
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Max
 from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -15,13 +16,22 @@ from apps.core.crud import AdminCreateView, AdminDeleteView, AdminDetailView, Ad
 from apps.core.downloads import serve_protected
 from apps.core.models import AuditLog
 from apps.core.notify import notify
-from apps.core.permissions_mixins import owns_or_scoped, require_perm
+from apps.core.permissions_mixins import require_perm
 from apps.reports import exporters
 
 from . import forms
 from .models import (
-    EducationPlan, Evidence, EvidenceCategory, EvidenceFile, OfficialDocument, PlanComment, PlanExportTemplate,
-    PlanVersion, Task, TaskAttachment, TaskComment,
+    EducationPlan,
+    Evidence,
+    EvidenceCategory,
+    EvidenceFile,
+    OfficialDocument,
+    PlanComment,
+    PlanExportTemplate,
+    PlanVersion,
+    Task,
+    TaskAttachment,
+    TaskComment,
 )
 
 
@@ -43,8 +53,15 @@ class DocList(AdminListView):
     page_title = "Quản lý văn bản"
     url_prefix = "office:doc"
     template_name = "office/doc_list.html"
-    columns = [("number", "Số"), ("symbol", "Ký hiệu"), ("issue_date", "Ngày ban hành"), ("summary", "Trích yếu"),
-               ("doc_type", "Loại"), ("processing_status", "Trạng thái"), ("deadline", "Hạn xử lý")]
+    columns = [
+        ("number", "Số"),
+        ("symbol", "Ký hiệu"),
+        ("issue_date", "Ngày ban hành"),
+        ("summary", "Trích yếu"),
+        ("doc_type", "Loại"),
+        ("processing_status", "Trạng thái"),
+        ("deadline", "Hạn xử lý"),
+    ]
     search_fields = ["number", "symbol", "summary", "content_text", "issuer_text"]
     filter_fields = ["direction", "doc_type", "field", "processing_status"]
     has_detail = True
@@ -89,8 +106,7 @@ class _DocEdit(DocScope):
 
     def after_save(self, form, obj, created):
         if obj.responsible and (created or "responsible" in form.changed_data) and obj.responsible != self.request.user:
-            notify([obj.responsible], f"Bạn được giao xử lý văn bản: {obj}", reverse("office:doc_detail", args=[obj.pk]),
-                   email=True)
+            notify([obj.responsible], f"Bạn được giao xử lý văn bản: {obj}", reverse("office:doc_detail", args=[obj.pk]), email=True)
 
 
 class DocCreate(_DocEdit, AdminCreateView):
@@ -129,14 +145,41 @@ def doc_export(request):
     view = DocList()
     view.setup(request)
     qs = view.get_queryset()
-    rows = [[d.get_direction_display(), d.number, d.symbol, d.issue_date, d.issuer_name, str(d.doc_type or ""),
-             str(d.field or ""), d.summary, str(d.responsible or ""), d.get_processing_status_display(), d.deadline]
-            for d in qs]
+    rows = [
+        [
+            d.get_direction_display(),
+            d.number,
+            d.symbol,
+            d.issue_date,
+            d.issuer_name,
+            str(d.doc_type or ""),
+            str(d.field or ""),
+            d.summary,
+            str(d.responsible or ""),
+            d.get_processing_status_display(),
+            d.deadline,
+        ]
+        for d in qs
+    ]
     log_action(request, "export", None, module="official_doc", changes={"rows": len(rows), "query": request.GET.dict()})
     return exporters.excel_response(
-        "danh-sach-van-ban", "Danh sách văn bản",
-        ["Loại sổ", "Số", "Ký hiệu", "Ngày ban hành", "Cơ quan ban hành", "Loại", "Lĩnh vực", "Trích yếu",
-         "Người phụ trách", "Trạng thái", "Hạn xử lý"], rows)
+        "danh-sach-van-ban",
+        "Danh sách văn bản",
+        [
+            "Loại sổ",
+            "Số",
+            "Ký hiệu",
+            "Ngày ban hành",
+            "Cơ quan ban hành",
+            "Loại",
+            "Lĩnh vực",
+            "Trích yếu",
+            "Người phụ trách",
+            "Trạng thái",
+            "Hạn xử lý",
+        ],
+        rows,
+    )
 
 
 # ============================================================================
@@ -153,9 +196,14 @@ def can_approve_plan(user, plan):
 
 
 def can_edit_plan(user, plan):
-    return has_perm(user, "plan", "edit") and plan.is_editable and (
-        plan.created_by_id == user.pk or has_full_scope(user)
-        or (user.role == ROLE_GROUP_LEADER and plan.group_id and plan.group_id == user.group_id)
+    return (
+        has_perm(user, "plan", "edit")
+        and plan.is_editable
+        and (
+            plan.created_by_id == user.pk
+            or has_full_scope(user)
+            or (user.role == ROLE_GROUP_LEADER and plan.group_id and plan.group_id == user.group_id)
+        )
     )
 
 
@@ -184,15 +232,20 @@ def plan_transitions_for(user, plan):
 def _snapshot_plan(plan, user, note=""):
     last = plan.versions.aggregate(m=Max("version_no"))["m"] or 0
     return PlanVersion.objects.create(
-        plan=plan, version_no=last + 1, title=plan.title, content=plan.content,
-        file=plan.file.name if plan.file else "", status=plan.status, note=note, created_by=user,
+        plan=plan,
+        version_no=last + 1,
+        title=plan.title,
+        content=plan.content,
+        file=plan.file.name if plan.file else "",
+        status=plan.status,
+        note=note,
+        created_by=user,
     )
 
 
 class PlanScope:
     def get_queryset(self):
-        return EducationPlan.objects.for_user(self.request.user).select_related(
-            "school_year", "group", "school_class", "created_by")
+        return EducationPlan.objects.for_user(self.request.user).select_related("school_year", "group", "school_class", "created_by")
 
 
 class PlanList(AdminListView):
@@ -200,8 +253,15 @@ class PlanList(AdminListView):
     module = "plan"
     page_title = "Kế hoạch giáo dục"
     url_prefix = "office:plan"
-    columns = [("title", "Tên kế hoạch"), ("level", "Cấp"), ("school_year", "Năm học"), ("group", "Tổ"),
-               ("school_class", "Lớp"), ("status", "Trạng thái"), ("updated_at", "Cập nhật")]
+    columns = [
+        ("title", "Tên kế hoạch"),
+        ("level", "Cấp"),
+        ("school_year", "Năm học"),
+        ("group", "Tổ"),
+        ("school_class", "Lớp"),
+        ("status", "Trạng thái"),
+        ("updated_at", "Cập nhật"),
+    ]
     search_fields = ["title", "content"]
     filter_fields = ["level", "status", "school_year", "group"]
     has_detail = True
@@ -292,8 +352,9 @@ def plan_transition(request, pk, name):
     _snapshot_plan(plan, request.user, f"{PLAN_TRANSITIONS[name][0]}. {note}".strip())
     log_action(request, f"plan:{name}", plan, module="plan", changes={"status": [old, target], "note": note})
     if plan.created_by and plan.created_by != request.user:
-        notify([plan.created_by], f"Kế hoạch '{plan}' chuyển sang: {plan.get_status_display()}",
-               reverse("office:plan_detail", args=[plan.pk]))
+        notify(
+            [plan.created_by], f"Kế hoạch '{plan}' chuyển sang: {plan.get_status_display()}", reverse("office:plan_detail", args=[plan.pk])
+        )
     messages.success(request, f"Kế hoạch đã chuyển sang trạng thái: {plan.get_status_display()}.")
     return redirect("office:plan_detail", pk=plan.pk)
 
@@ -305,8 +366,9 @@ def plan_comment(request, pk):
     form = forms.PlanCommentForm(request.POST, user=request.user)
     if form.is_valid():
         last = plan.latest_version
-        PlanComment.objects.create(plan=plan, user=request.user, content=form.cleaned_data["content"],
-                                   version_no=last.version_no if last else 0)
+        PlanComment.objects.create(
+            plan=plan, user=request.user, content=form.cleaned_data["content"], version_no=last.version_no if last else 0
+        )
         if plan.created_by and plan.created_by != request.user:
             notify([plan.created_by], f"Có góp ý mới cho kế hoạch '{plan}'", reverse("office:plan_detail", args=[plan.pk]))
         messages.success(request, "Đã gửi góp ý.")
@@ -326,8 +388,9 @@ def plan_download(request, pk, version=None):
 def plan_export(request, pk, fmt):
     plan = get_object_or_404(EducationPlan.objects.for_user(request.user), pk=pk)
     tpl_id = request.GET.get("mau")
-    template = (PlanExportTemplate.objects.filter(pk=tpl_id).first() if tpl_id and tpl_id.isdigit() else None) \
-        or PlanExportTemplate.objects.filter(is_default=True).first()
+    template = (
+        PlanExportTemplate.objects.filter(pk=tpl_id).first() if tpl_id and tpl_id.isdigit() else None
+    ) or PlanExportTemplate.objects.filter(is_default=True).first()
     log_action(request, f"export_{fmt}", plan, module="plan")
     if fmt == "docx":
         return exporters.plan_docx_response(plan, template)
@@ -342,8 +405,7 @@ class TemplateList(AdminListView):
     action = "approve"
     page_title = "Mẫu xuất kế hoạch"
     url_prefix = "office:template"
-    columns = [("name", "Tên mẫu"), ("title_prefix", "Tiền tố"), ("signature_title", "Chức danh ký"),
-               ("is_default", "Mặc định")]
+    columns = [("name", "Tên mẫu"), ("title_prefix", "Tiền tố"), ("signature_title", "Chức danh ký"), ("is_default", "Mặc định")]
 
 
 class _TemplateEdit:
@@ -418,8 +480,7 @@ def task_status_choices(user, task):
 
 class TaskScope:
     def get_queryset(self):
-        return Task.objects.for_user(self.request.user).select_related(
-            "assignee", "assigned_group", "assigned_campus", "created_by")
+        return Task.objects.for_user(self.request.user).select_related("assignee", "assigned_group", "assigned_campus", "created_by")
 
 
 class TaskList(AdminListView):
@@ -428,8 +489,14 @@ class TaskList(AdminListView):
     page_title = "Nhiệm vụ"
     url_prefix = "office:task"
     template_name = "office/task_list.html"
-    columns = [("title", "Nhiệm vụ"), ("target_label", "Giao cho"), ("due_date", "Thời hạn"), ("priority", "Ưu tiên"),
-               ("status", "Trạng thái"), ("created_by", "Người giao")]
+    columns = [
+        ("title", "Nhiệm vụ"),
+        ("target_label", "Giao cho"),
+        ("due_date", "Thời hạn"),
+        ("priority", "Ưu tiên"),
+        ("status", "Trạng thái"),
+        ("created_by", "Người giao"),
+    ]
     search_fields = ["title", "description"]
     filter_fields = ["status", "priority", "assigned_group", "assigned_campus"]
     has_detail = True
@@ -579,8 +646,7 @@ def task_attach(request, pk):
     form = forms.AttachmentForm(request.POST, request.FILES, user=request.user)
     if form.is_valid():
         f = form.cleaned_data["file"]
-        att = TaskAttachment(task=task, description=form.cleaned_data["description"], uploaded_by=request.user,
-                             original_name=f.name[:255])
+        att = TaskAttachment(task=task, description=form.cleaned_data["description"], uploaded_by=request.user, original_name=f.name[:255])
         att.file.save(f.name, f, save=True)
         log_action(request, "task_attach", task, module="task", changes={"file": att.original_name})
         messages.success(request, "Đã tải lên minh chứng.")
@@ -604,12 +670,17 @@ def task_export(request):
     view = TaskList()
     view.setup(request)
     qs = view.get_queryset()
-    rows = [[t.title, t.target_label, t.due_date, t.get_priority_display(), t.display_status,
-             str(t.created_by or ""), t.completed_at] for t in qs]
+    rows = [
+        [t.title, t.target_label, t.due_date, t.get_priority_display(), t.display_status, str(t.created_by or ""), t.completed_at]
+        for t in qs
+    ]
     log_action(request, "export", None, module="task", changes={"rows": len(rows)})
-    return exporters.excel_response("nhiem-vu", "Danh sách nhiệm vụ",
-                                    ["Nhiệm vụ", "Giao cho", "Thời hạn", "Ưu tiên", "Trạng thái", "Người giao",
-                                     "Hoàn thành lúc"], rows)
+    return exporters.excel_response(
+        "nhiem-vu",
+        "Danh sách nhiệm vụ",
+        ["Nhiệm vụ", "Giao cho", "Thời hạn", "Ưu tiên", "Trạng thái", "Người giao", "Hoàn thành lúc"],
+        rows,
+    )
 
 
 # ============================================================================
@@ -663,8 +734,14 @@ class EvidenceList(AdminListView):
     page_title = "Minh chứng"
     url_prefix = "office:evidence"
     template_name = "office/evidence_list.html"
-    columns = [("code", "Mã"), ("title", "Tên minh chứng"), ("category", "Danh mục"), ("evidence_date", "Ngày"),
-               ("responsible", "Phụ trách"), ("group", "Tổ")]
+    columns = [
+        ("code", "Mã"),
+        ("title", "Tên minh chứng"),
+        ("category", "Danh mục"),
+        ("evidence_date", "Ngày"),
+        ("responsible", "Phụ trách"),
+        ("group", "Tổ"),
+    ]
     search_fields = ["code", "title", "description", "criterion", "source"]
     filter_fields = ["category", "school_year", "group", "campus"]
     has_detail = True
@@ -768,10 +845,41 @@ def evidence_export(request):
     rows = []
     for e in qs.prefetch_related("files"):
         current = e.current_file
-        rows.append([e.code, e.title, str(e.category), e.criterion, e.source, e.evidence_date, str(e.responsible or ""),
-                     str(e.group or ""), str(e.campus or ""), str(e.plan or ""), str(e.task or ""), e.report_ref,
-                     current.version_no if current else 0])
+        rows.append(
+            [
+                e.code,
+                e.title,
+                str(e.category),
+                e.criterion,
+                e.source,
+                e.evidence_date,
+                str(e.responsible or ""),
+                str(e.group or ""),
+                str(e.campus or ""),
+                str(e.plan or ""),
+                str(e.task or ""),
+                e.report_ref,
+                current.version_no if current else 0,
+            ]
+        )
     log_action(request, "export", None, module="evidence", changes={"rows": len(rows)})
-    return exporters.excel_response("danh-muc-minh-chung", "Danh mục minh chứng",
-                                    ["Mã", "Tên minh chứng", "Danh mục", "Tiêu chí", "Nguồn", "Ngày", "Phụ trách", "Tổ",
-                                     "Điểm trường", "Kế hoạch", "Nhiệm vụ", "Báo cáo", "Số phiên bản tệp"], rows)
+    return exporters.excel_response(
+        "danh-muc-minh-chung",
+        "Danh mục minh chứng",
+        [
+            "Mã",
+            "Tên minh chứng",
+            "Danh mục",
+            "Tiêu chí",
+            "Nguồn",
+            "Ngày",
+            "Phụ trách",
+            "Tổ",
+            "Điểm trường",
+            "Kế hoạch",
+            "Nhiệm vụ",
+            "Báo cáo",
+            "Số phiên bản tệp",
+        ],
+        rows,
+    )

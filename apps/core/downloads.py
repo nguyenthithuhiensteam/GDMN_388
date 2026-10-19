@@ -1,4 +1,5 @@
 """Phục vụ tệp nội bộ sau khi đã kiểm tra quyền."""
+
 import mimetypes
 import os
 from urllib.parse import quote

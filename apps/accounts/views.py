@@ -81,9 +81,15 @@ def profile(request):
         messages.success(request, "Đã cập nhật hồ sơ cá nhân.")
         return redirect("accounts:profile")
     sessions = UserSession.objects.filter(user=request.user)
-    return render(request, "accounts/profile.html", {
-        "form": form, "sessions": sessions, "current_key": request.session.session_key,
-    })
+    return render(
+        request,
+        "accounts/profile.html",
+        {
+            "form": form,
+            "sessions": sessions,
+            "current_key": request.session.session_key,
+        },
+    )
 
 
 @login_required
@@ -110,6 +116,7 @@ def revoke_other_sessions(request):
 
 
 # --- Quản lý tài khoản ---------------------------------------------------------
+
 
 def _guard_target(actor, target):
     """Chỉ Quản trị hệ thống được sửa tài khoản Quản trị hệ thống/superuser."""
@@ -187,14 +194,16 @@ def user_toggle_lock(request, pk):
             target.save(update_fields=["is_active", "locked_reason"])
             if not target.is_active:
                 _revoke_sessions(target)
-        log_action(request, "unlock" if target.is_active else "lock", target, module="user",
-                   changes={"reason": form.cleaned_data["reason"]})
+        log_action(
+            request, "unlock" if target.is_active else "lock", target, module="user", changes={"reason": form.cleaned_data["reason"]}
+        )
         messages.success(request, ("Đã mở khóa " if target.is_active else "Đã khóa ") + str(target))
         return redirect("users:user_list")
     return render(request, "accounts/user_lock.html", {"target": target, "form": form})
 
 
 # --- Ma trận phân quyền ------------------------------------------------------------
+
 
 @require_perm("settings", "view")
 def permission_matrix(request):
@@ -218,14 +227,21 @@ def permission_matrix(request):
     rows = []
     for module, (label, acts) in MODULES.items():
         for action in acts:
-            rows.append({
-                "module": module, "module_label": label, "action": action,
-                "action_label": ACTION_LABELS[action],
-                "cells": [
-                    {"role": r, "checked": (r, module, action) in allowed} for r, _ in editable_roles
-                ],
-            })
-    return render(request, "accounts/permission_matrix.html", {
-        "rows": rows, "roles": editable_roles, "can_edit_matrix": can_edit,
-    })
-
+            rows.append(
+                {
+                    "module": module,
+                    "module_label": label,
+                    "action": action,
+                    "action_label": ACTION_LABELS[action],
+                    "cells": [{"role": r, "checked": (r, module, action) in allowed} for r, _ in editable_roles],
+                }
+            )
+    return render(
+        request,
+        "accounts/permission_matrix.html",
+        {
+            "rows": rows,
+            "roles": editable_roles,
+            "can_edit_matrix": can_edit,
+        },
+    )

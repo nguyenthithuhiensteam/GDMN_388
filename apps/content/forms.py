@@ -3,7 +3,16 @@ from django import forms
 from apps.core.forms_base import BaseForm, BaseModelForm
 
 from .models import (
-    Album, Announcement, Category, Disclosure, DisclosureSection, MediaItem, Page, Post, PublicDocument, StaffProfile,
+    Album,
+    Announcement,
+    Category,
+    Disclosure,
+    DisclosureSection,
+    MediaItem,
+    Page,
+    Post,
+    PublicDocument,
+    StaffProfile,
 )
 
 RICH = forms.Textarea(attrs={"rows": 14, "class": "form-control js-rich"})
@@ -130,8 +139,7 @@ class DisclosureForm(BaseModelForm):
 
     class Meta:
         model = Disclosure
-        fields = ["title", "section", "school_year", "description", "file", "disclosure_date", "valid_until",
-                  "review_due", "responsible"]
+        fields = ["title", "section", "school_year", "description", "file", "disclosure_date", "valid_until", "review_due", "responsible"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -139,7 +147,5 @@ class DisclosureForm(BaseModelForm):
 
 
 class AuthorityCheckForm(BaseForm):
-    confirmed = forms.BooleanField(
-        label="Tôi xác nhận đã kiểm tra nội dung công khai này theo thẩm quyền", required=False)
+    confirmed = forms.BooleanField(label="Tôi xác nhận đã kiểm tra nội dung công khai này theo thẩm quyền", required=False)
     note = forms.CharField(label="Ghi chú kiểm tra", max_length=500, required=False, widget=forms.Textarea(attrs={"rows": 2}))
-

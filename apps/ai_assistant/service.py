@@ -6,6 +6,7 @@ Kết nối dịch vụ AI (Claude API qua SDK chính thức `anthropic`).
 - Trước khi gửi, văn bản được lọc bớt thông tin định danh (email, số điện thoại, số CCCD/CMND).
 - Kết quả AI chỉ là bản nháp gợi ý; không tự động lưu/xuất bản/ban hành.
 """
+
 import logging
 import re
 
@@ -72,7 +73,9 @@ def generate(prompt, max_tokens=4000):
     try:
         if settings.AI_MODEL in _FALLBACK_MODELS:
             response = client.beta.messages.create(
-                **params, betas=["server-side-fallback-2026-07-01"], fallbacks="default",
+                **params,
+                betas=["server-side-fallback-2026-07-01"],
+                fallbacks="default",
             )
         else:
             response = client.messages.create(**params)

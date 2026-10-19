@@ -3,6 +3,7 @@ Quy trình duyệt nội dung dùng chung: Nháp → Chờ duyệt → Đã duy�
 
 Mỗi chuyển trạng thái yêu cầu một quyền trong ma trận phân quyền và được ghi nhật ký.
 """
+
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
@@ -20,19 +21,33 @@ class Status(models.TextChoices):
 
 
 STATUS_BADGES = {
-    "draft": "secondary", "pending": "warning", "approved": "info",
-    "published": "success", "hidden": "dark", "archived": "light",
+    "draft": "secondary",
+    "pending": "warning",
+    "approved": "info",
+    "published": "success",
+    "hidden": "dark",
+    "archived": "light",
 }
 
 
 class TimeStampedByModel(models.Model):
     created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, editable=False,
-        related_name="+", verbose_name="Người tạo",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name="Người tạo",
     )
     updated_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, editable=False,
-        related_name="+", verbose_name="Người sửa",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name="Người sửa",
     )
     created_at = models.DateTimeField("Ngày tạo", default=timezone.now, editable=False)
     updated_at = models.DateTimeField("Cập nhật", auto_now=True)
@@ -44,8 +59,13 @@ class TimeStampedByModel(models.Model):
 class WorkflowModel(TimeStampedByModel):
     status = models.CharField("Trạng thái", max_length=20, choices=Status.choices, default=Status.DRAFT, db_index=True)
     approved_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, editable=False,
-        related_name="+", verbose_name="Người duyệt",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        editable=False,
+        related_name="+",
+        verbose_name="Người duyệt",
     )
     approved_at = models.DateTimeField("Thời điểm duyệt", null=True, blank=True, editable=False)
     published_at = models.DateTimeField("Thời điểm xuất bản", null=True, blank=True, editable=False)

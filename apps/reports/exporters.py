@@ -1,4 +1,5 @@
 """Xuất dữ liệu ra Excel (openpyxl), PDF (reportlab, font DejaVu hỗ trợ tiếng Việt) và Word (python-docx)."""
+
 import datetime as dt
 import io
 from pathlib import Path
@@ -54,8 +55,7 @@ def excel_response(base_name, title, headers, rows):
         ws.column_dimensions[ws.cell(row=4, column=i).column_letter].width = 22
     buf = io.BytesIO()
     wb.save(buf)
-    resp = HttpResponse(buf.getvalue(),
-                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    resp = HttpResponse(buf.getvalue(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     return _attach(resp, _filename(base_name, "xlsx"))
 
 
@@ -106,20 +106,22 @@ def pdf_table_response(base_name, title, sections):
 
     st = _pdf_styles()
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=landscape(A4), leftMargin=30, rightMargin=30, topMargin=30, bottomMargin=30,
-                            title=title)
-    story = [Paragraph(_esc(title), st["title"]),
-             Paragraph(f"Xuất lúc: {timezone.localtime():%d/%m/%Y %H:%M}", st["small"]), Spacer(1, 10)]
+    doc = SimpleDocTemplate(buf, pagesize=landscape(A4), leftMargin=30, rightMargin=30, topMargin=30, bottomMargin=30, title=title)
+    story = [Paragraph(_esc(title), st["title"]), Paragraph(f"Xuất lúc: {timezone.localtime():%d/%m/%Y %H:%M}", st["small"]), Spacer(1, 10)]
     for sec_title, headers, rows in sections:
         story.append(Paragraph(_esc(sec_title), st["h"]))
         data = [[Paragraph(_esc(h), st["small"]) for h in headers]]
         data += [[Paragraph(_esc(_fmt(v)), st["small"]) for v in r] for r in rows]
         t = Table(data, repeatRows=1)
-        t.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E8F5E9")),
-            ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-        ]))
+        t.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E8F5E9")),
+                    ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+                    ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ]
+            )
+        )
         story += [t, Spacer(1, 12)]
     doc.build(story)
     return _attach(HttpResponse(buf.getvalue(), content_type="application/pdf"), _filename(base_name, "pdf"))
@@ -129,15 +131,22 @@ def _template_parts(plan, template):
     from apps.core.models import SiteSettings
 
     site = SiteSettings.load()
-    left = (template.header_left if template and template.header_left else
-            "\n".join(x for x in [site.governing_body.upper(), site.school_name.upper()] if x))
+    left = (
+        template.header_left
+        if template and template.header_left
+        else "\n".join(x for x in [site.governing_body.upper(), site.school_name.upper()] if x)
+    )
     right = template.header_right if template else "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM\nĐộc lập - Tự do - Hạnh phúc"
     prefix = template.title_prefix if template else "KẾ HOẠCH"
     sign = template.signature_title if template else ""
     footer = template.footer_note if template else ""
     status_note = {
-        "draft": "DỰ THẢO", "consulting": "DỰ THẢO - LẤY GÓP Ý", "pending": "DỰ THẢO - CHỜ DUYỆT",
-        "approved": "ĐÃ DUYỆT (CHƯA BAN HÀNH)", "official": "", "archived": "LƯU TRỮ",
+        "draft": "DỰ THẢO",
+        "consulting": "DỰ THẢO - LẤY GÓP Ý",
+        "pending": "DỰ THẢO - CHỜ DUYỆT",
+        "approved": "ĐÃ DUYỆT (CHƯA BAN HÀNH)",
+        "official": "",
+        "archived": "LƯU TRỮ",
     }[plan.status]
     return left, right, prefix, sign, footer, status_note
 
@@ -182,8 +191,7 @@ def plan_docx_response(plan, template=None):
         doc.add_paragraph(footer)
     buf = io.BytesIO()
     doc.save(buf)
-    resp = HttpResponse(buf.getvalue(),
-                        content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+    resp = HttpResponse(buf.getvalue(), content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
     return _attach(resp, _filename(f"ke-hoach-{plan.pk}", "docx"))
 
 
@@ -194,13 +202,16 @@ def plan_pdf_response(plan, template=None):
     st = _pdf_styles()
     left, right, prefix, sign, footer, status_note = _template_parts(plan, template)
     buf = io.BytesIO()
-    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=50, rightMargin=40, topMargin=40, bottomMargin=40,
-                            title=plan.title)
+    doc = SimpleDocTemplate(buf, pagesize=A4, leftMargin=50, rightMargin=40, topMargin=40, bottomMargin=40, title=plan.title)
     story = [Table([[Paragraph(_esc(left), st["center"]), Paragraph(_esc(right), st["center"])]], colWidths=[240, 260])]
     if status_note:
         story.append(Paragraph(f"<para alignment='right'><b>{_esc(status_note)}</b></para>", st["body"]))
-    story += [Spacer(1, 12), Paragraph(_esc(f"{prefix} {plan.title}".strip().upper()), st["title"]),
-              Paragraph(_esc(f"Năm học {plan.school_year}"), st["center"]), Spacer(1, 12)]
+    story += [
+        Spacer(1, 12),
+        Paragraph(_esc(f"{prefix} {plan.title}".strip().upper()), st["title"]),
+        Paragraph(_esc(f"Năm học {plan.school_year}"), st["center"]),
+        Spacer(1, 12),
+    ]
     for para in (plan.content or "").split("\n\n"):
         story.append(Paragraph(_esc(para), st["body"]))
         story.append(Spacer(1, 6))

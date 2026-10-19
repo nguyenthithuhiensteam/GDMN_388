@@ -26,7 +26,9 @@ class SiteSettings(models.Model):
     website_domain = models.CharField("Tên miền", max_length=150, blank=True)
     facebook_url = models.URLField("Facebook", blank=True)
     map_embed_url = models.URLField(
-        "URL nhúng bản đồ", blank=True, max_length=1000,
+        "URL nhúng bản đồ",
+        blank=True,
+        max_length=1000,
         help_text="Chỉ dán đường dẫn trong thuộc tính src của mã nhúng Google Maps (https://www.google.com/maps/embed?...).",
     )
     working_hours = models.CharField("Giờ làm việc", max_length=200, blank=True)
@@ -38,11 +40,13 @@ class SiteSettings(models.Model):
     color_secondary = models.CharField("Màu phụ (xanh dương)", max_length=7, default="#1A6BDB", validators=[hex_color])
     color_dark = models.CharField("Màu đậm", max_length=7, default="#0A1F4E", validators=[hex_color])
     require_approval = models.BooleanField(
-        "Bắt buộc duyệt trước khi xuất bản", default=True,
+        "Bắt buộc duyệt trước khi xuất bản",
+        default=True,
         help_text="Nếu bật, nội dung phải ở trạng thái 'Đã duyệt' mới được xuất bản.",
     )
     disclosure_review_days = models.PositiveIntegerField(
-        "Nhắc rà soát công khai trước (ngày)", default=30,
+        "Nhắc rà soát công khai trước (ngày)",
+        default=30,
     )
     footer_note = models.CharField("Ghi chú chân trang", max_length=255, blank=True)
     demo_data_loaded = models.BooleanField("Đang chứa dữ liệu mẫu", default=False, editable=False)
@@ -75,8 +79,12 @@ class AuditLog(models.Model):
     """Nhật ký thao tác quan trọng (tạo/sửa/xóa/duyệt/xuất bản/xuất dữ liệu/đăng nhập...)."""
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name="Người thực hiện", related_name="audit_logs",
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Người thực hiện",
+        related_name="audit_logs",
     )
     action = models.CharField("Thao tác", max_length=50, db_index=True)
     module = models.CharField("Chức năng", max_length=40, blank=True, db_index=True)

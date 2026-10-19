@@ -49,8 +49,10 @@ class LoginTests(BaseTestCase):
         self.login(self.teacher)
         r = self.client.get(reverse("core:dashboard"))
         self.assertRedirects(r, reverse("accounts:password_change"))
-        r = self.client.post(reverse("accounts:password_change"), {
-            "old_password": PASSWORD, "new_password1": "Mat-khau-Moi-2026!", "new_password2": "Mat-khau-Moi-2026!"})
+        r = self.client.post(
+            reverse("accounts:password_change"),
+            {"old_password": PASSWORD, "new_password1": "Mat-khau-Moi-2026!", "new_password2": "Mat-khau-Moi-2026!"},
+        )
         self.assertEqual(r.status_code, 302)
         self.teacher.refresh_from_db()
         self.assertFalse(self.teacher.must_change_password)
@@ -101,8 +103,10 @@ class PermissionMatrixTests(BaseTestCase):
 
     def test_admin_changes_matrix_takes_effect(self):
         self.login(self.admin)
-        data = {f"p__{r}__{m}__{a}": "on" for r, m, a in RolePermission.objects.filter(allowed=True).exclude(
-            role=P.ROLE_ADMIN).values_list("role", "module", "action")}
+        data = {
+            f"p__{r}__{m}__{a}": "on"
+            for r, m, a in RolePermission.objects.filter(allowed=True).exclude(role=P.ROLE_ADMIN).values_list("role", "module", "action")
+        }
         data[f"p__{P.ROLE_TEACHER}__report__view"] = "on"
         self.client.post(reverse("users:permissions"), data)
         self.assertTrue(RolePermission.objects.get(role=P.ROLE_TEACHER, module="report", action="view").allowed)
@@ -112,9 +116,19 @@ class PermissionMatrixTests(BaseTestCase):
 
 class UserManagementTests(BaseTestCase):
     def _payload(self, **kw):
-        data = {"username": "moi", "full_name": "Người mới", "email": "moi@example.com", "phone": "", "role": P.ROLE_TEACHER,
-                "position": "", "campus": "", "group": "", "is_active": "on",
-                "password1": "Mat-khau-Tam-2026!", "password2": "Mat-khau-Tam-2026!"}
+        data = {
+            "username": "moi",
+            "full_name": "Người mới",
+            "email": "moi@example.com",
+            "phone": "",
+            "role": P.ROLE_TEACHER,
+            "position": "",
+            "campus": "",
+            "group": "",
+            "is_active": "on",
+            "password1": "Mat-khau-Tam-2026!",
+            "password2": "Mat-khau-Tam-2026!",
+        }
         data.update(kw)
         return data
 
@@ -174,9 +188,21 @@ class UserManagementTests(BaseTestCase):
 class AnonymousAccessTests(BaseTestCase):
     @override_settings(DEBUG=False)
     def test_admin_urls_require_login(self):
-        urls = ["/quan-tri/", "/quan-tri/tai-khoan/", "/quan-tri/van-ban/", "/quan-tri/ke-hoach/", "/quan-tri/nhiem-vu/",
-                "/quan-tri/minh-chung/", "/quan-tri/bao-cao/", "/quan-tri/cau-hinh/", "/quan-tri/nhat-ky/",
-                "/quan-tri/noi-dung/tin-tuc/", "/quan-tri/to-chuc/nam-hoc/", "/quan-tri/ai/", "/quan-tri/tai-khoan/phan-quyen/"]
+        urls = [
+            "/quan-tri/",
+            "/quan-tri/tai-khoan/",
+            "/quan-tri/van-ban/",
+            "/quan-tri/ke-hoach/",
+            "/quan-tri/nhiem-vu/",
+            "/quan-tri/minh-chung/",
+            "/quan-tri/bao-cao/",
+            "/quan-tri/cau-hinh/",
+            "/quan-tri/nhat-ky/",
+            "/quan-tri/noi-dung/tin-tuc/",
+            "/quan-tri/to-chuc/nam-hoc/",
+            "/quan-tri/ai/",
+            "/quan-tri/tai-khoan/phan-quyen/",
+        ]
         for url in urls:
             r = self.client.get(url)
             self.assertEqual(r.status_code, 302, url)

@@ -43,7 +43,8 @@ class LoginForm(AuthenticationForm):
         ip = client_ip(self.request)
         if username and is_locked(username, ip):
             raise forms.ValidationError(
-                self.error_messages["locked"], code="locked",
+                self.error_messages["locked"],
+                code="locked",
                 params={"minutes": settings.LOGIN_LOCKOUT_MINUTES},
             )
         try:
@@ -70,8 +71,12 @@ def _role_choices_for(actor):
 class UserAdminForm(BaseModelForm):
     """Form quản lý tài khoản. Người dùng không thể tự đổi vai trò/trạng thái của chính mình."""
 
-    password1 = forms.CharField(label="Mật khẩu tạm thời", widget=forms.PasswordInput, required=False,
-                                help_text="Người dùng sẽ phải đổi mật khẩu ở lần đăng nhập đầu tiên.")
+    password1 = forms.CharField(
+        label="Mật khẩu tạm thời",
+        widget=forms.PasswordInput,
+        required=False,
+        help_text="Người dùng sẽ phải đổi mật khẩu ở lần đăng nhập đầu tiên.",
+    )
     password2 = forms.CharField(label="Nhập lại mật khẩu", widget=forms.PasswordInput, required=False)
 
     class Meta:
@@ -126,5 +131,4 @@ class UserAdminForm(BaseModelForm):
 
 
 class LockForm(forms.Form):
-    reason = forms.CharField(label="Lý do", max_length=255, required=False,
-                             widget=forms.TextInput(attrs={"class": "form-control"}))
+    reason = forms.CharField(label="Lý do", max_length=255, required=False, widget=forms.TextInput(attrs={"class": "form-control"}))

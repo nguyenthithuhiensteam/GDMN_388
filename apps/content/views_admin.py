@@ -1,4 +1,5 @@
 """Khu vực quản trị nội dung website."""
+
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
@@ -20,8 +21,17 @@ from apps.core.workflow import Status, apply_transition, available_transitions, 
 
 from . import forms
 from .models import (
-    Album, Announcement, Category, Disclosure, DisclosureSection, DisclosureVersion, MediaItem, Page, Post,
-    PublicDocument, StaffProfile,
+    Album,
+    Announcement,
+    Category,
+    Disclosure,
+    DisclosureSection,
+    DisclosureVersion,
+    MediaItem,
+    Page,
+    Post,
+    PublicDocument,
+    StaffProfile,
 )
 
 # kind trên URL → (model, module, tiền tố tên URL)
@@ -140,8 +150,13 @@ class PostList(ScopedListMixin, AdminListView):
     module = "news"
     page_title = "Tin tức"
     url_prefix = "content:news"
-    columns = [("title", "Tiêu đề"), ("category", "Danh mục"), ("status", "Trạng thái"),
-               ("created_by", "Người tạo"), ("updated_at", "Cập nhật")]
+    columns = [
+        ("title", "Tiêu đề"),
+        ("category", "Danh mục"),
+        ("status", "Trạng thái"),
+        ("created_by", "Người tạo"),
+        ("updated_at", "Cập nhật"),
+    ]
     search_fields = ["title", "summary"]
     filter_fields = ["status", "category"]
     has_detail = True
@@ -198,8 +213,7 @@ class AnnouncementList(ScopedListMixin, AdminListView):
     module = "announcement"
     page_title = "Thông báo"
     url_prefix = "content:announcement"
-    columns = [("title", "Tiêu đề"), ("kind", "Loại"), ("status", "Trạng thái"),
-               ("start_date", "Hiển thị từ"), ("end_date", "Hết hạn")]
+    columns = [("title", "Tiêu đề"), ("kind", "Loại"), ("status", "Trạng thái"), ("start_date", "Hiển thị từ"), ("end_date", "Hết hạn")]
     search_fields = ["title", "body"]
     filter_fields = ["status", "kind"]
     has_detail = True
@@ -292,8 +306,13 @@ class StaffList(AdminListView):
     module = "staff_profile"
     page_title = "Đội ngũ (hiển thị công khai)"
     url_prefix = "content:staff"
-    columns = [("full_name", "Họ tên"), ("position", "Chức vụ"), ("staff_group", "Nhóm"),
-               ("public_consent", "Đồng ý công khai"), ("is_visible", "Hiển thị")]
+    columns = [
+        ("full_name", "Họ tên"),
+        ("position", "Chức vụ"),
+        ("staff_group", "Nhóm"),
+        ("public_consent", "Đồng ý công khai"),
+        ("is_visible", "Hiển thị"),
+    ]
     search_fields = ["full_name", "position"]
     filter_fields = ["staff_group"]
 
@@ -332,8 +351,7 @@ class AlbumList(ScopedListMixin, AdminListView):
     module = "album"
     page_title = "Thư viện ảnh/video"
     url_prefix = "content:album"
-    columns = [("title", "Tên album"), ("kind", "Loại"), ("visibility", "Phạm vi"), ("status", "Trạng thái"),
-               ("event_date", "Ngày")]
+    columns = [("title", "Tên album"), ("kind", "Loại"), ("visibility", "Phạm vi"), ("status", "Trạng thái"), ("event_date", "Ngày")]
     search_fields = ["title", "description"]
     filter_fields = ["status", "kind", "school_year"]
     has_detail = True
@@ -399,16 +417,28 @@ def album_upload(request, pk):
     created = 0
     with transaction.atomic():
         for i, f in enumerate(form.cleaned_data["images"]):
-            item = MediaItem(album=album, media_type="image", caption=form.cleaned_data["caption"],
-                             has_children=form.cleaned_data["has_children"], uploaded_by=request.user, order=start + i)
+            item = MediaItem(
+                album=album,
+                media_type="image",
+                caption=form.cleaned_data["caption"],
+                has_children=form.cleaned_data["has_children"],
+                uploaded_by=request.user,
+                order=start + i,
+            )
             item.image.save(f.name, f, save=False)
             optimize_image_field(item.image)
             item.save()
             created += 1
         if form.cleaned_data.get("video_url"):
-            MediaItem.objects.create(album=album, media_type="video", video_url=form.cleaned_data["video_url"],
-                                     caption=form.cleaned_data["caption"], has_children=form.cleaned_data["has_children"],
-                                     uploaded_by=request.user, order=start + created)
+            MediaItem.objects.create(
+                album=album,
+                media_type="video",
+                video_url=form.cleaned_data["video_url"],
+                caption=form.cleaned_data["caption"],
+                has_children=form.cleaned_data["has_children"],
+                uploaded_by=request.user,
+                order=start + created,
+            )
             created += 1
     log_action(request, "media_upload", album, module="album", changes={"count": created})
     messages.success(request, f"Đã tải lên {created} mục. Ảnh sẽ chỉ hiển thị công khai sau khi được xác nhận quyền sử dụng hình ảnh.")
@@ -418,8 +448,9 @@ def album_upload(request, pk):
 @require_perm("album", "approve")
 def media_consent(request, pk):
     item = get_object_or_404(MediaItem.objects.select_related("album"), pk=pk)
-    form = forms.ConsentForm(request.POST or None, user=request.user,
-                             initial={"consent_status": item.consent_status, "consent_note": item.consent_note})
+    form = forms.ConsentForm(
+        request.POST or None, user=request.user, initial={"consent_status": item.consent_status, "consent_note": item.consent_note}
+    )
     if request.method == "POST" and form.is_valid():
         old = item.consent_status
         item.consent_status = form.cleaned_data["consent_status"]
@@ -427,8 +458,13 @@ def media_consent(request, pk):
         item.consent_by = request.user
         item.consent_at = timezone.now()
         item.save()
-        log_action(request, "media_consent", item.album, module="album",
-                   changes={"item": item.pk, "consent": [old, item.consent_status], "note": item.consent_note})
+        log_action(
+            request,
+            "media_consent",
+            item.album,
+            module="album",
+            changes={"item": item.pk, "consent": [old, item.consent_status], "note": item.consent_note},
+        )
         messages.success(request, "Đã cập nhật quyền sử dụng hình ảnh.")
         return redirect("content:album_detail", pk=item.album_id)
     return render(request, "content/media_consent.html", {"item": item, "form": form, "page_title": "Xác nhận quyền sử dụng hình ảnh"})
@@ -443,9 +479,15 @@ def media_edit(request, pk):
         form.save()
         messages.success(request, "Đã cập nhật chú thích.")
         return redirect("content:album_detail", pk=item.album_id)
-    return render(request, "admin/generic_form.html", {
-        "form": form, "page_title": "Sửa ảnh/video", "list_url": reverse("content:album_detail", args=[item.album_id]),
-    })
+    return render(
+        request,
+        "admin/generic_form.html",
+        {
+            "form": form,
+            "page_title": "Sửa ảnh/video",
+            "list_url": reverse("content:album_detail", args=[item.album_id]),
+        },
+    )
 
 
 @require_perm("album", "delete")
@@ -464,8 +506,7 @@ def media_delete(request, pk):
 @require_perm("album", "view")
 def media_file_admin(request, pk):
     item = get_object_or_404(MediaItem.objects.select_related("album"), pk=pk, media_type="image")
-    if not (has_full_scope(request.user) or owns_or_scoped(request.user, item.album)
-            or item.album.status == Status.PUBLISHED):
+    if not (has_full_scope(request.user) or owns_or_scoped(request.user, item.album) or item.album.status == Status.PUBLISHED):
         raise PermissionDenied
     resp = serve_protected(item.image)
     resp["Content-Disposition"] = "inline"
@@ -478,8 +519,13 @@ class PubDocList(ScopedListMixin, AdminListView):
     module = "public_document"
     page_title = "Tài liệu tải xuống"
     url_prefix = "content:pubdoc"
-    columns = [("title", "Tên tài liệu"), ("category", "Danh mục"), ("status", "Trạng thái"),
-               ("download_count", "Lượt tải"), ("updated_at", "Cập nhật")]
+    columns = [
+        ("title", "Tên tài liệu"),
+        ("category", "Danh mục"),
+        ("status", "Trạng thái"),
+        ("download_count", "Lượt tải"),
+        ("updated_at", "Cập nhật"),
+    ]
     search_fields = ["title", "description"]
     filter_fields = ["status", "category"]
     has_detail = True
@@ -563,8 +609,13 @@ class DisclosureList(AdminListView):
     page_title = "Công khai giáo dục"
     url_prefix = "content:disclosure"
     template_name = "content/disclosure_list.html"
-    columns = [("title", "Tiêu đề"), ("section", "Mục"), ("status", "Trạng thái"),
-               ("disclosure_date", "Ngày công bố"), ("review_due", "Hạn rà soát")]
+    columns = [
+        ("title", "Tiêu đề"),
+        ("section", "Mục"),
+        ("status", "Trạng thái"),
+        ("disclosure_date", "Ngày công bố"),
+        ("review_due", "Hạn rà soát"),
+    ]
     search_fields = ["title", "description"]
     filter_fields = ["status", "section", "school_year"]
     has_detail = True
@@ -587,8 +638,12 @@ class _DisclosureEdit:
         if created or {"file", "title", "description"} & set(form.changed_data):
             last = obj.versions.aggregate(m=Max("version_no"))["m"] or 0
             DisclosureVersion.objects.create(
-                disclosure=obj, version_no=last + 1, title=obj.title, description=obj.description,
-                file=obj.file.name if obj.file else "", note=form.cleaned_data.get("version_note", ""),
+                disclosure=obj,
+                version_no=last + 1,
+                title=obj.title,
+                description=obj.description,
+                file=obj.file.name if obj.file else "",
+                note=form.cleaned_data.get("version_note", ""),
                 created_by=self.request.user,
             )
         if not created and {"file", "title", "description"} & set(form.changed_data) and obj.authority_checked:
@@ -646,8 +701,9 @@ def disclosure_check(request, pk):
         obj.authority_checked_by = request.user if obj.authority_checked else None
         obj.authority_note = form.cleaned_data["note"]
         obj.save(update_fields=["authority_checked", "authority_checked_by", "authority_note"])
-        log_action(request, "authority_check", obj, module="disclosure",
-                   changes={"checked": obj.authority_checked, "note": obj.authority_note})
+        log_action(
+            request, "authority_check", obj, module="disclosure", changes={"checked": obj.authority_checked, "note": obj.authority_note}
+        )
         messages.success(request, "Đã cập nhật xác nhận kiểm tra.")
     return redirect("content:disclosure_detail", pk=obj.pk)
 

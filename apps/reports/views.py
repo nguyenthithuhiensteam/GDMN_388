@@ -1,5 +1,6 @@
 """Báo cáo, thống kê. Mỗi phần chỉ hiển thị khi người dùng có quyền xem chức năng tương ứng,
 và dữ liệu được lọc theo phạm vi người dùng được phép xem."""
+
 from datetime import datetime
 
 from django import forms
@@ -46,8 +47,12 @@ def build_report(user, f):
     sections = []
     if has_perm(user, "news", "view"):
         rows = []
-        for label, model, field in (("Tin tức", Post, "created_at"), ("Thông báo", Announcement, "created_at"),
-                                    ("Album", Album, "created_at"), ("Công khai giáo dục", Disclosure, "created_at")):
+        for label, model, field in (
+            ("Tin tức", Post, "created_at"),
+            ("Thông báo", Announcement, "created_at"),
+            ("Album", Album, "created_at"),
+            ("Công khai giáo dục", Disclosure, "created_at"),
+        ):
             qs = _range(model.objects.all(), field, f)
             c = dict(_counts(qs, "status", Status.choices))
             rows.append([label] + [c.get(lbl, 0) for _, lbl in Status.choices])
@@ -62,8 +67,9 @@ def build_report(user, f):
         rows.append(["Quá hạn (chưa hoàn thành)", qs.overdue().count()])
         rows.append(["Tổng", qs.count()])
         sections.append(("Tiến độ nhiệm vụ", ["Trạng thái", "Số lượng"], rows))
-        by_group = qs.exclude(assigned_group=None).values_list("assigned_group__name").annotate(
-            total=Count("pk")).order_by("assigned_group__name")
+        by_group = (
+            qs.exclude(assigned_group=None).values_list("assigned_group__name").annotate(total=Count("pk")).order_by("assigned_group__name")
+        )
         if by_group:
             sections.append(("Nhiệm vụ theo tổ", ["Tổ", "Tổng số"], [list(r) for r in by_group]))
     if has_perm(user, "official_doc", "view"):
@@ -99,11 +105,17 @@ def report_index(request):
     form = ReportFilterForm(request.GET or None, user=request.user)
     f = form.cleaned_data if form.is_valid() else {}
     sections = build_report(request.user, f)
-    return render(request, "reports/index.html", {
-        "form": form, "sections": sections, "page_title": "Báo cáo, thống kê",
-        "can_export": has_perm(request.user, "report", "export"),
-        "querystring": request.GET.urlencode(),
-    })
+    return render(
+        request,
+        "reports/index.html",
+        {
+            "form": form,
+            "sections": sections,
+            "page_title": "Báo cáo, thống kê",
+            "can_export": has_perm(request.user, "report", "export"),
+            "querystring": request.GET.urlencode(),
+        },
+    )
 
 
 @require_perm("report", "export")
@@ -145,5 +157,6 @@ def audit_export(request):
         raise PermissionDenied("Ngày không hợp lệ") from exc
     rows = [[a.created_at, str(a.user or ""), a.action, a.module, a.object_repr, a.ip_address] for a in qs[:20000]]
     log_action(request, "export", None, module="audit", changes={"rows": len(rows)})
-    return exporters.excel_response("nhat-ky", "Nhật ký hệ thống",
-                                    ["Thời điểm", "Người thực hiện", "Thao tác", "Chức năng", "Đối tượng", "IP"], rows)
+    return exporters.excel_response(
+        "nhat-ky", "Nhật ký hệ thống", ["Thời điểm", "Người thực hiện", "Thao tác", "Chức năng", "Đối tượng", "IP"], rows
+    )

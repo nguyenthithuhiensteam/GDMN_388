@@ -1,4 +1,5 @@
 """Kiểm tra tệp tải lên: phần mở rộng, dung lượng và chữ ký nội dung (magic bytes)."""
+
 import os
 
 from django.conf import settings
@@ -6,7 +7,18 @@ from django.core.exceptions import ValidationError
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 DOCUMENT_EXTENSIONS = {
-    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".ods", ".odp", ".txt", ".csv",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".odt",
+    ".ods",
+    ".odp",
+    ".txt",
+    ".csv",
 }
 VIDEO_EXTENSIONS = {".mp4", ".webm"}
 
@@ -14,8 +26,15 @@ _ZIP = b"PK\x03\x04"
 _OLE = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 SIGNATURES = {
     ".pdf": [b"%PDF"],
-    ".docx": [_ZIP], ".xlsx": [_ZIP], ".pptx": [_ZIP], ".odt": [_ZIP], ".ods": [_ZIP], ".odp": [_ZIP],
-    ".doc": [_OLE], ".xls": [_OLE], ".ppt": [_OLE],
+    ".docx": [_ZIP],
+    ".xlsx": [_ZIP],
+    ".pptx": [_ZIP],
+    ".odt": [_ZIP],
+    ".ods": [_ZIP],
+    ".odp": [_ZIP],
+    ".doc": [_OLE],
+    ".xls": [_OLE],
+    ".ppt": [_OLE],
 }
 # Nội dung không được phép xuất hiện ở đầu tệp văn bản thuần (tránh HTML/script trá hình).
 TEXT_FORBIDDEN_PREFIXES = (b"<!doctype", b"<html", b"<script", b"<?php", b"<svg")
@@ -45,10 +64,7 @@ def validate_document_upload(f):
         return  # tệp đã lưu trước đó, không kiểm tra lại
     ext = _ext(f.name)
     if ext not in DOCUMENT_EXTENSIONS | IMAGE_EXTENSIONS:
-        raise ValidationError(
-            "Định dạng không được phép. Chấp nhận: "
-            + ", ".join(sorted(DOCUMENT_EXTENSIONS | IMAGE_EXTENSIONS))
-        )
+        raise ValidationError("Định dạng không được phép. Chấp nhận: " + ", ".join(sorted(DOCUMENT_EXTENSIONS | IMAGE_EXTENSIONS)))
     _check_size(f, settings.MAX_UPLOAD_MB)
     head = _head(f, 64)
     if ext in IMAGE_EXTENSIONS:
