@@ -1,6 +1,6 @@
 {% extends "base_admin.html" %}
 {% block content %}
-<p class="text-muted">Xin chào <strong>{{ user.get_full_name }}</strong> ({{ user.role_label }}). Số liệu dưới đây được tính theo phạm vi quyền của bạn.</p>
+<p class="text-muted">Xin chào <strong>{{ user.get_full_name }}</strong> — <span class="badge text-bg-light border">{{ user.role_label }}</span>{% if user.group %} · {{ user.group }}{% endif %}{% if user.campus %} · {{ user.campus }}{% endif %}. Nội dung trang này được chọn theo vai trò và tính trong phạm vi quyền của bạn.</p>
 {% if alerts %}
 <section aria-labelledby="alerts-h" class="mb-3">
   <h2 id="alerts-h" class="h6">Cần xử lý</h2>
@@ -22,31 +22,27 @@
   </div>
   {% endfor %}
 </div>
-<div class="row g-3">
-  <div class="col-lg-6">
+<div class="row g-3 mb-3">
+  {% for p in panels %}
+  <section class="col-lg-6" aria-labelledby="panel-{{ forloop.counter }}" data-panel="{{ p.key }}">
     <div class="card h-100"><div class="card-body">
-      <h2 class="h6"><i class="bi bi-calendar-event"></i> Công việc sắp đến hạn (7 ngày)</h2>
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-2" id="panel-{{ forloop.counter }}"><i class="bi bi-{{ p.icon }}" aria-hidden="true"></i> {{ p.title }}</h2>
+        {% if p.more_url %}<a class="small" href="{{ p.more_url }}">Xem tất cả</a>{% endif %}
+      </div>
       <ul class="list-group list-group-flush">
-      {% for t in upcoming_tasks %}
-        <li class="list-group-item d-flex justify-content-between px-0">
-          <a href="{% url 'office:task_detail' t.pk %}">{{ t.title }}</a>
-          <span class="badge text-bg-{{ t.status_badge }}">{{ t.due_date|date:"d/m/Y" }} · {{ t.display_status }}</span>
+      {% for it in p.items %}
+        <li class="list-group-item px-0 d-flex justify-content-between align-items-start gap-2">
+          <span>{% if it.url %}<a href="{{ it.url }}">{{ it.text }}</a>{% else %}{{ it.text }}{% endif %}{% if it.sub %}<br><small class="text-muted">{{ it.sub }}</small>{% endif %}</span>
+          {% if it.badge != "" %}<span class="badge text-bg-{{ it.style }} text-nowrap">{{ it.badge }}</span>{% endif %}
         </li>
-      {% empty %}<li class="list-group-item px-0 text-muted">Không có công việc sắp đến hạn.</li>{% endfor %}
+      {% empty %}<li class="list-group-item px-0 text-muted">{{ p.empty }}</li>{% endfor %}
       </ul>
     </div></div>
-  </div>
-  <div class="col-lg-6">
-    <div class="card h-100"><div class="card-body">
-      <h2 class="h6"><i class="bi bi-folder2-open"></i> Văn bản mới cập nhật</h2>
-      <ul class="list-group list-group-flush">
-      {% for d in recent_docs %}
-        <li class="list-group-item px-0"><a href="{% url 'office:doc_detail' d.pk %}">{{ d }}</a>
-          <div class="small text-muted">{{ d.updated_at|date:"d/m/Y H:i" }} · {{ d.get_processing_status_display }}</div></li>
-      {% empty %}<li class="list-group-item px-0 text-muted">Chưa có văn bản.</li>{% endfor %}
-      </ul>
-    </div></div>
-  </div>
+  </section>
+  {% endfor %}
+</div>
+<div class="row g-3">
   <div class="col-lg-6">
     <div class="card h-100"><div class="card-body">
       <h2 class="h6"><i class="bi bi-bell"></i> Nhắc việc chưa đọc</h2>

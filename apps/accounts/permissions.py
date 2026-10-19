@@ -178,3 +178,25 @@ def has_full_scope(user):
 
 def is_manager(user):
     return bool(user and user.is_authenticated and (user.is_superuser or user.role in MANAGER_ROLES))
+
+
+def is_last_active_admin(user):
+    """True nếu `user` là tài khoản Quản trị hệ thống đang hoạt động duy nhất (không được khóa/xóa/hạ quyền)."""
+    from django.db.models import Q
+
+    from .models import User
+
+    if not user.pk or not (user.is_superuser or user.role == ROLE_ADMIN) or not user.is_active:
+        return False
+    others = User.objects.filter(Q(role=ROLE_ADMIN) | Q(is_superuser=True), is_active=True).exclude(pk=user.pk)
+    return not others.exists()
+
+
+def effective_permissions(user):
+    """Danh sách (nhãn chức năng, [nhãn thao tác]) mà người dùng đang được phép — để hiển thị."""
+    result = []
+    for module, (label, acts) in MODULES.items():
+        allowed = [ACTION_LABELS[a] for a in acts if has_perm(user, module, a)]
+        if allowed:
+            result.append((label, allowed))
+    return result

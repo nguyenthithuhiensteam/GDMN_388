@@ -1,0 +1,53 @@
+{% extends "base_admin.html" %}
+{% block breadcrumbs %}<li class="breadcrumb-item"><a href="{% url 'users:user_list' %}">Tài khoản</a></li><li class="breadcrumb-item active" aria-current="page">{{ target.username }}</li>{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  {% if can_edit %}
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'users:user_edit' target.pk %}"><i class="bi bi-pencil"></i> Sửa / đặt lại mật khẩu</a>
+  {% if target != user %}<a class="btn btn-outline-warning btn-sm" href="{% url 'users:user_lock' target.pk %}"><i class="bi {% if target.is_active %}bi-lock{% else %}bi-unlock{% endif %}"></i> {% if target.is_active %}Khóa{% else %}Mở khóa{% endif %}</a>{% endif %}
+  <form method="post" action="{% url 'users:user_revoke_sessions' target.pk %}" data-confirm="Đăng xuất mọi phiên đăng nhập của tài khoản này?">{% csrf_token %}
+    <button class="btn btn-outline-danger btn-sm" type="submit"><i class="bi bi-box-arrow-right"></i> Thu hồi mọi phiên</button></form>
+  {% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card"><div class="card-body">
+      <h2 class="h6">Thông tin</h2>
+      <dl class="row small mb-0">
+        <dt class="col-5">Họ tên</dt><dd class="col-7">{{ target.full_name }}</dd>
+        <dt class="col-5">Tên đăng nhập</dt><dd class="col-7">{{ target.username }}</dd>
+        <dt class="col-5">Email</dt><dd class="col-7">{{ target.email|default:"—" }}</dd>
+        <dt class="col-5">Vai trò</dt><dd class="col-7">{{ target.role_label }}</dd>
+        <dt class="col-5">Chức vụ</dt><dd class="col-7">{{ target.position|default:"—" }}</dd>
+        <dt class="col-5">Điểm trường</dt><dd class="col-7">{{ target.campus|default:"—" }}</dd>
+        <dt class="col-5">Tổ chuyên môn</dt><dd class="col-7">{{ target.group|default:"—" }}</dd>
+        <dt class="col-5">Lớp phụ trách</dt><dd class="col-7">{% for c in target.classes.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</dd>
+        <dt class="col-5">Trạng thái</dt><dd class="col-7">{% if target.is_active %}<span class="badge text-bg-success">Hoạt động</span>{% else %}<span class="badge text-bg-danger">Đã khóa</span> {{ target.locked_reason }}{% endif %}{% if target.must_change_password %} <span class="badge text-bg-warning">Chờ đổi mật khẩu</span>{% endif %}</dd>
+        <dt class="col-5">Đăng nhập gần nhất</dt><dd class="col-7">{{ target.last_login|date:"d/m/Y H:i"|default:"—" }}</dd>
+      </dl>
+    </div></div>
+    <div class="card mt-3"><div class="card-body">
+      <h2 class="h6">Quyền thực tế (theo vai trò)</h2>
+      <ul class="small mb-0">{% for label, acts in permissions %}<li><strong>{{ label }}:</strong> {{ acts|join:", " }}</li>{% empty %}<li class="text-muted">Không có quyền nào.</li>{% endfor %}</ul>
+    </div></div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card"><div class="card-body">
+      <h2 class="h6">Phiên đăng nhập đang hoạt động</h2>
+      <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Thiết bị</th><th>IP</th><th>Bắt đầu</th><th>Gần nhất</th></tr></thead><tbody>
+      {% for s in sessions %}<tr><td class="small">{{ s.user_agent|truncatechars:60|default:"—" }}</td><td class="small">{{ s.ip_address|default:"—" }}</td><td class="small">{{ s.created_at|date:"d/m/Y H:i" }}</td><td class="small">{{ s.last_seen|date:"d/m/Y H:i" }}</td></tr>
+      {% empty %}<tr><td colspan="4" class="text-muted">Không có phiên nào.</td></tr>{% endfor %}</tbody></table></div>
+    </div></div>
+    <div class="card mt-3"><div class="card-body">
+      <h2 class="h6">Lịch sử đăng nhập (20 lần gần nhất)</h2>
+      <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Thời điểm</th><th>IP</th><th>Kết quả</th></tr></thead><tbody>
+      {% for a in attempts %}<tr><td class="small">{{ a.created_at|date:"d/m/Y H:i:s" }}</td><td class="small">{{ a.ip_address|default:"—" }}</td><td>{% if a.successful %}<span class="badge text-bg-success">Thành công</span>{% else %}<span class="badge text-bg-danger">Thất bại</span>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="3" class="text-muted">Chưa có.</td></tr>{% endfor %}</tbody></table></div>
+    </div></div>
+    <div class="card mt-3"><div class="card-body">
+      <h2 class="h6">Thao tác gần đây</h2>
+      <ul class="list-unstyled small mb-0">{% for a in actions %}<li>{{ a.created_at|date:"d/m/Y H:i" }} · <code>{{ a.action }}</code> {{ a.object_repr|truncatechars:70 }}</li>{% empty %}<li class="text-muted">Chưa có.</li>{% endfor %}</ul>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

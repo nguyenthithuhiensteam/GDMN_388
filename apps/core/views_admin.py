@@ -14,6 +14,7 @@ from django.views.decorators.http import require_POST
 from apps.accounts.permissions import has_full_scope, has_perm
 
 from .audit import diff_instances, log_action, snapshot
+from .dashboard import panels_for
 from .forms import AuditFilterForm, ContactStatusForm, SiteSettingsForm
 from .models import AuditLog, ContactMessage, Notification, SiteSettings
 from .permissions_mixins import require_perm
@@ -64,26 +65,17 @@ def dashboard(request):
             alerts.append(("danger", f"{overdue} nội dung công khai đã quá hạn rà soát.", "content:disclosure_list"))
         if due.count() - overdue:
             alerts.append(("warning", f"{due.count() - overdue} nội dung công khai sắp đến hạn rà soát.", "content:disclosure_list"))
-    recent_docs = []
     if has_perm(user, "official_doc", "view"):
         docs = OfficialDocument.objects.for_user(user)
-        recent_docs = docs.order_by("-updated_at")[:5]
         n = docs.filter(responsible=user, processing_status__in=["new", "processing"], deadline__lt=today).count()
         if n:
             alerts.append(("danger", f"{n} văn bản bạn phụ trách đã quá hạn xử lý.", "office:doc_list"))
-    upcoming_tasks = []
     if has_perm(user, "task", "view"):
         tasks = Task.objects.for_user(user)
         mine = (
             tasks.filter(Q(assignee=user) | Q(assigned_group_id=user.group_id, assignee__isnull=True))
             if not has_full_scope(user)
             else tasks
-        )
-        upcoming_tasks = (
-            mine.open()
-            .filter(due_date__isnull=False, due_date__lte=today + timedelta(days=7))
-            .select_related("assignee")
-            .order_by("due_date")[:8]
         )
         cards.append(("Nhiệm vụ đang mở", mine.open().count(), "office:task_list", "list-check"))
         overdue = mine.overdue().count()
@@ -111,8 +103,7 @@ def dashboard(request):
         {
             "cards": cards,
             "alerts": alerts,
-            "recent_docs": recent_docs,
-            "upcoming_tasks": upcoming_tasks,
+            "panels": panels_for(user),
             "activity": activity[:10],
             "notifications": Notification.objects.filter(user=user, is_read=False)[:5],
             "page_title": "Tổng quan",

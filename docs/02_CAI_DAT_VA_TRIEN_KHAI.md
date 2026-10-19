@@ -70,7 +70,7 @@ Chỉ cho phép kết nối cục bộ (mặc định của Ubuntu).
 ```bash
 sudo -u mamnon -H bash
 cd /srv/mamnon && git clone <địa-chỉ-kho> app && cd app
-python3 -m venv /srv/mamnon/venv && /srv/mamnon/venv/bin/pip install -r requirements.txt
+python3 -m venv /srv/mamnon/venv && /srv/mamnon/venv/bin/pip install -r requirements-prod.txt
 cp .env.example .env && chmod 600 .env && nano .env    # điền SECRET_KEY, mật khẩu CSDL, tên miền, email...
 set -a; source .env; set +a
 /srv/mamnon/venv/bin/python manage.py migrate
@@ -115,7 +115,7 @@ Nâng cấp:
 ```bash
 cd /srv/mamnon/app && sudo -u mamnon deploy/backup.sh       # sao lưu trước
 sudo -u mamnon git pull
-sudo -u mamnon /srv/mamnon/venv/bin/pip install -r requirements.txt
+sudo -u mamnon /srv/mamnon/venv/bin/pip install -r requirements-prod.txt
 set -a; source .env; set +a
 sudo -u mamnon -E /srv/mamnon/venv/bin/python manage.py migrate
 sudo -u mamnon -E /srv/mamnon/venv/bin/python manage.py collectstatic --noinput

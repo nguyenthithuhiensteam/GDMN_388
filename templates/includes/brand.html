@@ -1,0 +1,1 @@
+{% load static %}{% if school.logo %}<img src="{{ school.logo.url }}" alt="Logo {{ school.school_name }}" class="brand-logo">{% else %}<img src="{% static 'img/favicon.svg' %}" alt="" class="brand-logo" aria-hidden="true">{% endif %}

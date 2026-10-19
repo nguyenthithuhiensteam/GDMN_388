@@ -1,0 +1,11 @@
+{% extends "base_admin.html" %}
+{% block title %}Không có quyền truy cập{% endblock %}
+{% block breadcrumbs %}<li class="breadcrumb-item active" aria-current="page">Không có quyền</li>{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body text-center py-5">
+  <i class="bi bi-shield-lock display-5 text-danger" aria-hidden="true"></i>
+  <h2 class="h4 mt-3">Bạn không có quyền thực hiện thao tác này</h2>
+  <p class="text-muted">Vai trò hiện tại: <strong>{{ user.role_label }}</strong>. Nếu cần quyền, hãy liên hệ Quản trị hệ thống. Lần truy cập này đã được hệ thống ghi nhận.</p>
+  <a class="btn btn-primary" href="{% url 'core:dashboard' %}">Về trang tổng quan</a>
+</div></div>
+{% endblock %}

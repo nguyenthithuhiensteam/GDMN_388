@@ -1,0 +1,4 @@
+# Máy chủ chính thức (Linux): Gunicorn + PostgreSQL
+-r requirements.txt
+gunicorn>=22.0
+psycopg[binary]>=3.1

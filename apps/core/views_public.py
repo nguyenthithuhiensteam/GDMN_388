@@ -27,6 +27,13 @@ def contact(request):
 
 
 def error_403(request, exception=None):
+    """Trang 403: trong khu quản trị dùng giao diện quản trị và ghi nhật ký lần truy cập bị từ chối."""
+    user = getattr(request, "user", None)
+    if user is not None and user.is_authenticated and request.path.startswith(("/quan-tri", "/tai-khoan")):
+        from .audit import log_action
+
+        log_action(request, "access_denied", None, changes={"path": request.path[:200], "method": request.method})
+        return render(request, "errors/403_admin.html", status=403)
     return render(request, "errors/403.html", status=403)
 
 

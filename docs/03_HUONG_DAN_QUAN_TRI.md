@@ -14,6 +14,13 @@
 - Khi cán bộ nghỉ/chuyển công tác: **Khóa** tài khoản (không xóa) để giữ lịch sử; mọi phiên đăng nhập của họ bị thu hồi ngay.
 - Phân quyền tối thiểu: chỉ bật quyền cần cho công việc. Quyền "Xuất dữ liệu" và "Tải xuống" cần cân nhắc vì dữ liệu rời khỏi hệ thống.
 
+### Xem chi tiết và thu hồi phiên của một tài khoản
+Bấm tên người dùng trong danh sách Tài khoản để xem: phạm vi (điểm trường, tổ, lớp), **quyền thực tế** theo vai trò, phiên đăng nhập đang hoạt động, lịch sử đăng nhập, thao tác gần đây. Nút "Thu hồi mọi phiên" đăng xuất người đó trên mọi thiết bị (dùng khi nghi lộ mật khẩu hoặc mất thiết bị).
+Hệ thống không cho khóa/xóa/hạ quyền tài khoản Quản trị hệ thống cuối cùng đang hoạt động — nên duy trì ít nhất 2 tài khoản quản trị.
+
+### Dashboard theo vai trò
+Trang Tổng quan hiển thị khối khác nhau theo vai trò: Quản trị (tình trạng hệ thống, sao lưu, đăng nhập thất bại), lãnh đạo (hàng chờ duyệt, tiến độ theo tổ, văn bản, liên hệ), văn phòng (văn bản cần xử lý, liên hệ), tổ trưởng (tổ của tôi, kế hoạch chờ duyệt của tổ), giáo viên/nhân viên (việc của tôi, kế hoạch, nội dung đang soạn).
+
 ## 3. Quy trình nội dung website
 Nháp → **Gửi duyệt** (người soạn) → **Phê duyệt**/Trả lại (người có quyền duyệt) → **Xuất bản** → Ẩn / Lưu trữ / Khôi phục.
 - Nút "Xem trước" hiển thị nội dung chưa công khai bằng giao diện website (chỉ người có quyền).

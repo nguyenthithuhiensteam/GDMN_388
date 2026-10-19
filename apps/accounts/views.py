@@ -3,19 +3,20 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.backends.db import SessionStore
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.views.decorators.http import require_POST
 
-from apps.core.audit import log_action
+from apps.core.audit import client_ip, log_action
 from apps.core.crud import AdminCreateView, AdminDeleteView, AdminListView, AdminUpdateView
 from apps.core.permissions_mixins import require_perm
 
 from .forms import LockForm, LoginForm, ProfileForm, UserAdminForm
-from .models import RolePermission, User, UserSession
-from .permissions import ACTION_LABELS, MODULES, ROLE_ADMIN, ROLE_CHOICES
+from .models import LoginAttempt, RolePermission, User, UserSession
+from .permissions import ACTION_LABELS, MODULES, ROLE_ADMIN, ROLE_CHOICES, effective_permissions, has_perm, is_last_active_admin
 
 
 class LoginView(auth_views.LoginView):
@@ -53,6 +54,26 @@ class PasswordChangeView(auth_views.PasswordChangeView):
         log_action(self.request, "password_change", user, module="user")
         messages.success(self.request, "Đã đổi mật khẩu. Các phiên đăng nhập khác đã được đăng xuất.")
         return response
+
+
+class PasswordResetView(auth_views.PasswordResetView):
+    """Khôi phục mật khẩu có giới hạn tần suất theo IP; luôn trả cùng một thông báo (không lộ email có tồn tại)."""
+
+    template_name = "accounts/password_reset.html"
+    email_template_name = "accounts/password_reset_email.txt"
+    subject_template_name = "accounts/password_reset_subject.txt"
+    success_url = reverse_lazy("accounts:password_reset_done")
+    LIMIT_PER_HOUR = 5
+
+    def form_valid(self, form):
+        key = f"pwreset:{client_ip(self.request) or 'unknown'}"
+        count = cache.get(key, 0)
+        cache.set(key, count + 1, 3600)
+        if count >= self.LIMIT_PER_HOUR:
+            log_action(self.request, "password_reset_throttled", None, module="user")
+            return redirect(self.success_url)  # không gửi thêm email, không tiết lộ đã bị chặn
+        log_action(self.request, "password_reset_request", None, module="user")
+        return super().form_valid(form)
 
 
 def _follow_session_key(old_key, new_key):
@@ -118,9 +139,13 @@ def revoke_other_sessions(request):
 # --- Quản lý tài khoản ---------------------------------------------------------
 
 
+def _may_manage(actor, target):
+    """Chỉ Quản trị hệ thống được thao tác trên tài khoản Quản trị hệ thống/superuser."""
+    return not ((target.role == ROLE_ADMIN or target.is_superuser) and not (actor.is_superuser or actor.role == ROLE_ADMIN))
+
+
 def _guard_target(actor, target):
-    """Chỉ Quản trị hệ thống được sửa tài khoản Quản trị hệ thống/superuser."""
-    if (target.role == ROLE_ADMIN or target.is_superuser) and not (actor.is_superuser or actor.role == ROLE_ADMIN):
+    if not _may_manage(actor, target):
         raise PermissionDenied
 
 
@@ -175,7 +200,7 @@ class UserDelete(AdminDeleteView):
 
     def can_modify(self, obj):
         _guard_target(self.request.user, obj)
-        if obj.pk == self.request.user.pk:
+        if obj.pk == self.request.user.pk or is_last_active_admin(obj):
             raise PermissionDenied
         return True
 
@@ -186,6 +211,9 @@ def user_toggle_lock(request, pk):
     _guard_target(request.user, target)
     if target.pk == request.user.pk:
         raise PermissionDenied
+    if target.is_active and is_last_active_admin(target):
+        messages.error(request, "Không thể khóa tài khoản Quản trị hệ thống duy nhất đang hoạt động.")
+        return redirect("users:user_list")
     form = LockForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         with transaction.atomic():
@@ -200,6 +228,39 @@ def user_toggle_lock(request, pk):
         messages.success(request, ("Đã mở khóa " if target.is_active else "Đã khóa ") + str(target))
         return redirect("users:user_list")
     return render(request, "accounts/user_lock.html", {"target": target, "form": form})
+
+
+@require_perm("user", "view")
+def user_detail(request, pk):
+    """Hồ sơ tài khoản cho người quản lý: phạm vi, quyền thực tế, phiên đăng nhập, lịch sử đăng nhập, thao tác gần đây."""
+    from apps.core.models import AuditLog
+
+    target = get_object_or_404(User.objects.select_related("campus", "group"), pk=pk)
+    return render(
+        request,
+        "accounts/user_detail.html",
+        {
+            "target": target,
+            "page_title": f"Tài khoản: {target}",
+            "permissions": effective_permissions(target),
+            "sessions": UserSession.objects.filter(user=target),
+            "attempts": LoginAttempt.objects.filter(username__iexact=target.username)[:20],
+            "actions": AuditLog.objects.filter(user=target)[:20],
+            "can_edit": has_perm(request.user, "user", "edit") and _may_manage(request.user, target),
+        },
+    )
+
+
+@require_perm("user", "edit")
+@require_POST
+def user_revoke_sessions(request, pk):
+    target = get_object_or_404(User, pk=pk)
+    _guard_target(request.user, target)
+    keep = request.session.session_key if target.pk == request.user.pk else None
+    n = _revoke_sessions(target, keep=keep)
+    log_action(request, "session_revoke_all", target, module="user", changes={"count": n})
+    messages.success(request, f"Đã đăng xuất {n} phiên của {target}.")
+    return redirect("users:user_detail", pk=target.pk)
 
 
 # --- Ma trận phân quyền ------------------------------------------------------------

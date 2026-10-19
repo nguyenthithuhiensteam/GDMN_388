@@ -24,7 +24,8 @@ a { color: var(--mn-secondary); }
 .topbar { background: var(--mn-dark); color: #dbe4ff; font-size: .875rem; }
 .topbar a { color: #fff; text-decoration: none; }
 .site-header { background: #fff; border-bottom: 4px solid var(--mn-accent); }
-.site-header .brand img { max-height: 64px; width: auto; }
+.brand-logo { height: 56px; width: auto; }
+.sidebar .brand-logo { height: 36px; }
 .site-header .brand-name { color: var(--mn-dark); font-weight: 800; line-height: 1.2; }
 .site-header .brand-sub { color: var(--mn-primary); font-size: .85rem; font-weight: 600; }
 .main-nav { background: var(--mn-primary); }

@@ -8,7 +8,7 @@ from apps.core.audit import client_ip
 from apps.core.forms_base import BaseModelForm, style_fields
 
 from .models import LoginAttempt, User
-from .permissions import ROLE_ADMIN, ROLE_CHOICES
+from .permissions import ROLE_ADMIN, ROLE_CHOICES, is_last_active_admin
 
 
 def is_locked(username, ip):
@@ -107,6 +107,14 @@ class UserAdminForm(BaseModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if self.instance.pk:
+            original = User.objects.get(pk=self.instance.pk)
+            demoted = cleaned.get("role", original.role) != ROLE_ADMIN or not cleaned.get("is_active", original.is_active)
+            if demoted and is_last_active_admin(original):
+                raise forms.ValidationError(
+                    "Đây là tài khoản Quản trị hệ thống duy nhất đang hoạt động: không thể khóa hoặc đổi vai trò. "
+                    "Hãy tạo thêm một tài khoản Quản trị trước."
+                )
         p1, p2 = cleaned.get("password1"), cleaned.get("password2")
         if p1 or p2:
             if p1 != p2:

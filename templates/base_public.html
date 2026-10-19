@@ -1,18 +1,9 @@
-{% load static %}<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{{ school.school_name }}{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}{{ school.slogan|default:school.school_name }}{% endblock %}">
-  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  {% include "includes/theme_vars.html" %}
-  <link rel="icon" href="{% if school.logo %}{{ school.logo.url }}{% else %}{% static 'img/favicon.svg' %}{% endif %}">
-</head>
-<body>
-<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+{% extends "base.html" %}
+{% load static %}
+{% block meta %}<meta name="description" content="{% block meta_description %}{{ school.slogan|default:school.school_name }}{% endblock %}">{% endblock %}
+{% block title %}{{ school.school_name }}{% endblock %}
+{% block body_class %}public{% endblock %}
+{% block body %}
 {% if preview %}<div class="preview-banner text-center py-2 fw-bold">XEM TRƯỚC – nội dung chưa công khai</div>{% endif %}
 <div class="topbar py-1">
   <div class="container d-flex flex-wrap justify-content-between gap-2">
@@ -32,7 +23,7 @@
 <header class="site-header py-2">
   <div class="container d-flex align-items-center justify-content-between gap-3">
     <a class="brand d-flex align-items-center gap-2 text-decoration-none" href="{% url 'public:home' %}">
-      {% if school.logo %}<img src="{{ school.logo.url }}" alt="Logo {{ school.school_name }}">{% else %}<i class="bi bi-flower1 fs-1 text-primary-mn" aria-hidden="true"></i>{% endif %}
+      {% include "includes/brand.html" %}
       <span>
         {% if school.governing_body %}<span class="d-block brand-sub">{{ school.governing_body }}</span>{% endif %}
         <span class="d-block brand-name fs-5">{{ school.school_name }}</span>
@@ -111,7 +102,4 @@
     <p class="small mb-0 text-center">© {% now "Y" %} {{ school.school_name }}{% if school.footer_note %} · {{ school.footer_note }}{% endif %}</p>
   </div>
 </footer>
-<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'js/app.js' %}"></script>
-</body>
-</html>
+{% endblock %}

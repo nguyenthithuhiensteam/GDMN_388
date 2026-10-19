@@ -6,17 +6,57 @@ Ngôn ngữ tiếng Việt, múi giờ Asia/Ho_Chi_Minh, ngày dd/mm/yyyy.
 
 > Mã nguồn được viết độc lập; không sao chép mã, dữ liệu, hình ảnh hay thương hiệu của website khác.
 
-## Chạy nhanh trên máy tính
+## Cài đặt trên Windows 10/11 (máy tính cá nhân, môi trường phát triển)
+
+1. Cài **Python 3.11 trở lên** từ https://www.python.org/downloads/windows/ — khi cài, tích chọn **"Add python.exe to PATH"**.
+   (Đã kiểm thử với Python 3.13; các phiên bản 3.11–3.12 dự kiến tương thích nhưng chưa chạy thử.)
+2. Giải nén tệp ZIP mã nguồn, ví dụ vào `C:\mamnon`. Mở **PowerShell** tại thư mục đó (Shift + chuột phải → *Open PowerShell window here*).
+3. Chạy lần lượt:
+   ```powershell
+   py -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   # Nếu báo lỗi "running scripts is disabled": chạy lệnh dưới rồi kích hoạt lại
+   #   Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+   python -m pip install --upgrade pip
+   pip install -r requirements.txt
+   python manage.py migrate
+   python manage.py create_admin --username quantri --email ban@truong.edu.vn
+   python manage.py runserver
+   ```
+   Lệnh `create_admin` hỏi mật khẩu (gõ không hiển thị, tối thiểu 10 ký tự, không quá phổ biến).
+4. Mở trình duyệt: http://127.0.0.1:8000/ (website) và http://127.0.0.1:8000/quan-tri/ (quản trị).
+5. (Tùy chọn) dữ liệu MẪU để dùng thử: `python manage.py seed_demo` — mật khẩu các tài khoản mẫu chỉ in ra **một lần**;
+   xóa bằng `python manage.py seed_demo --remove`.
+6. Lần sau: mở PowerShell tại thư mục dự án → `.\.venv\Scripts\Activate.ps1` → `python manage.py runserver`.
+
+Ghi chú Windows: môi trường phát triển dùng SQLite (tệp `db.sqlite3`), không cần cài PostgreSQL. `requirements.txt` chỉ gồm
+các gói chạy được trên Windows; gói dành cho máy chủ (Gunicorn, PostgreSQL) nằm riêng trong `requirements-prod.txt`.
+Tôi chưa chạy thử các bước này trên máy Windows thật (mới kiểm thử trên Linux).
+
+Trên macOS/Linux: thay `py` bằng `python3` và `.\.venv\Scripts\Activate.ps1` bằng `source .venv/bin/activate`.
+
+### Kiểm tra mã nguồn
 ```bash
-python -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py create_admin --username quantri      # nhập mật khẩu ẩn (≥10 ký tự)
-python manage.py seed_demo                             # tùy chọn: dữ liệu MẪU [MẪU], in mật khẩu tài khoản mẫu
-python manage.py runserver
+python manage.py test          # 98 kiểm thử tự động
+python manage.py check
+pip install ruff && ruff check . && ruff format --check .
 ```
-- Website: http://127.0.0.1:8000/ · Quản trị: http://127.0.0.1:8000/quan-tri/
-- Kiểm thử: `python manage.py test` · Xóa dữ liệu mẫu: `python manage.py seed_demo --remove`
+
+## Triển khai lên máy chủ (tóm tắt)
+Hướng dẫn đầy đủ: [docs/02_CAI_DAT_VA_TRIEN_KHAI.md](docs/02_CAI_DAT_VA_TRIEN_KHAI.md). Tóm tắt trên VPS Ubuntu:
+
+1. Trỏ DNS: bản ghi `A` của tên miền (và `www`) về IP máy chủ.
+2. Cài gói: `python3-venv postgresql nginx certbot python3-certbot-nginx`; tạo người dùng hệ thống `mamnon`, CSDL PostgreSQL `mamnon`.
+3. Lấy mã nguồn vào `/srv/mamnon/app`, tạo venv, `pip install -r requirements-prod.txt`.
+4. `cp .env.example .env`, điền `DJANGO_SECRET_KEY`, mật khẩu CSDL, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, SMTP; `chmod 600 .env`.
+5. `python manage.py migrate && python manage.py collectstatic --noinput && python manage.py check --deploy`.
+6. `python manage.py create_admin --username ...` (không chạy `seed_demo` trên máy chủ chính thức).
+7. Cài `deploy/mamnon.service` (Gunicorn), `deploy/mamnon-daily.timer` (sao lưu, nhắc việc, dọn dữ liệu), `deploy/nginx.conf`.
+8. HTTPS: `sudo certbot --nginx -d ten-mien -d www.ten-mien`.
+9. Xác minh: `curl -I https://ten-mien/` trả 200, đăng nhập `/quan-tri/` được, `python manage.py verify_backup <tệp> --restore-test` thành công.
+
+> **Trạng thái triển khai Internet:** chưa thực hiện. Môi trường làm việc hiện tại không có máy chủ, tên miền hay thông tin
+> xác thực của nhà trường. Khi có VPS (IP, quyền SSH), tên miền và tài khoản SMTP, có thể thực hiện các bước trên.
 
 ## Tài liệu
 | Tệp | Nội dung |
@@ -26,6 +66,7 @@ python manage.py runserver
 | [docs/03_HUONG_DAN_QUAN_TRI.md](docs/03_HUONG_DAN_QUAN_TRI.md) | Hướng dẫn quản trị, phân quyền và các quy trình nghiệp vụ |
 | [docs/04_BAO_MAT_VA_SU_CO.md](docs/04_BAO_MAT_VA_SU_CO.md) | Biện pháp bảo mật, chính sách lưu giữ dữ liệu, xử lý sự cố |
 | [docs/05_TRANG_THAI_CHUC_NANG.md](docs/05_TRANG_THAI_CHUC_NANG.md) | Đã hoàn thành / chưa hoàn thành / hạn chế |
+| [docs/06_BAO_CAO_GIAI_DOAN_1_2.md](docs/06_BAO_CAO_GIAI_DOAN_1_2.md) | Báo cáo rà soát và kết quả kiểm tra Giai đoạn 1–2 |
 
 ## Cấu trúc thư mục
 ```

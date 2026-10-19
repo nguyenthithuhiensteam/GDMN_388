@@ -1,4 +1,4 @@
-# Thành phần bắt buộc
+# Thành phần bắt buộc (dùng cho mọi môi trường, kể cả Windows)
 Django>=5.2,<5.3
 Pillow>=10.0
 bleach[css]>=6.1
@@ -6,6 +6,3 @@ openpyxl>=3.1
 reportlab>=4.0
 python-docx>=1.1
 python-dotenv>=1.0
-# Môi trường chính thức
-gunicorn>=22.0
-psycopg[binary]>=3.1

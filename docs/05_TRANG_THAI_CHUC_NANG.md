@@ -8,7 +8,7 @@ Cập nhật: 19/10/2026. "Đã hoàn thành" nghĩa là đã có mã chạy đ�
 | Giai đoạn | Nội dung | Trạng thái |
 |---|---|---|
 | 1 | Phân tích, kiến trúc, sitemap, mô hình dữ liệu, ma trận quyền | Hoàn thành — `docs/01_PHAN_TICH_THIET_KE.md` |
-| 2 | Nền tảng, đăng nhập, người dùng, vai trò, dashboard | Hoàn thành, có kiểm thử |
+| 2 | Nền tảng, đăng nhập, người dùng, vai trò, dashboard | Hoàn thành, có kiểm thử; bổ sung đợt 2 (dashboard theo vai trò, bảo vệ quản trị viên cuối, giới hạn khôi phục mật khẩu, chi tiết tài khoản) — xem `06_BAO_CAO_GIAI_DOAN_1_2.md` |
 | 3 | Website công khai, quản trị nội dung, quy trình duyệt | Hoàn thành, có kiểm thử |
 | 4 | Văn bản, kế hoạch (phiên bản, góp ý, duyệt, xuất Word/PDF), nhiệm vụ, minh chứng | Hoàn thành, có kiểm thử |
 | 5 | Báo cáo + xuất Excel/PDF, sao lưu/kiểm tra/khôi phục, AI tùy chọn | Hoàn thành; AI chỉ kiểm thử với dịch vụ giả lập (mock) |

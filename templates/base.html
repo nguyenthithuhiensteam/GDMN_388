@@ -1,0 +1,21 @@
+{% load static %}<!doctype html>
+{% comment %}Khung HTML dùng chung cho website công khai và khu quản trị: meta, CSS, màu theo cấu hình, favicon, JS.{% endcomment %}
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block meta %}{% endblock %}
+  <title>{% block title %}{{ school.school_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  {% include "includes/theme_vars.html" %}
+  <link rel="icon" href="{% if school.logo %}{{ school.logo.url }}{% else %}{% static 'img/favicon.svg' %}{% endif %}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+{% block body %}{% endblock %}
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

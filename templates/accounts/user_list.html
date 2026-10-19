@@ -23,7 +23,7 @@
   <tbody>
   {% for u in object_list %}
     <tr>
-      <td>{{ u.full_name }}</td><td>{{ u.username }}</td><td>{{ u.role_label }}</td>
+      <td><a href="{% url 'users:user_detail' u.pk %}">{{ u.full_name }}</a></td><td>{{ u.username }}</td><td>{{ u.role_label }}</td>
       <td>{{ u.campus|default:"—" }}</td><td>{{ u.group|default:"—" }}</td>
       <td>{% if u.is_active %}<span class="badge text-bg-success">Hoạt động</span>{% else %}<span class="badge text-bg-danger" title="{{ u.locked_reason }}">Đã khóa</span>{% endif %}
         {% if u.must_change_password %}<span class="badge text-bg-warning">Chờ đổi MK</span>{% endif %}</td>

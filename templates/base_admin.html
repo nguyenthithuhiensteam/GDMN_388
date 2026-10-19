@@ -1,22 +1,13 @@
-{% load static %}<!doctype html>
-<html lang="vi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <title>{% block title %}{{ page_title|default:"Quản trị" }} · {{ school.short_name|default:school.school_name }}{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
-  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/site.css' %}">
-  {% include "includes/theme_vars.html" %}
-  <link rel="icon" href="{% if school.logo %}{{ school.logo.url }}{% else %}{% static 'img/favicon.svg' %}{% endif %}">
-</head>
-<body>
-<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+{% extends "base.html" %}
+{% load static %}
+{% block meta %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block title %}{{ page_title|default:"Quản trị" }} · {{ school.short_name|default:school.school_name }}{% endblock %}
+{% block body_class %}admin{% endblock %}
+{% block body %}
 <div class="d-flex admin-shell">
   <nav id="sidebar" class="sidebar p-3" aria-label="Menu quản trị">
     <a class="brand d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'core:dashboard' %}">
-      <i class="bi bi-flower1 fs-3 text-warning" aria-hidden="true"></i>
+      {% include "includes/brand.html" %}
       <span class="small">{{ school.school_name }}</span>
     </a>
     {% with p=request.path %}
@@ -84,12 +75,15 @@
       </div>
     </header>
     <main id="main" class="p-3 p-md-4">
+      <nav aria-label="Đường dẫn" class="small">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="{% url 'core:dashboard' %}">Quản trị</a></li>
+          {% block breadcrumbs %}{% if page_title and request.path != "/quan-tri/" %}{% if list_url and list_url != request.path %}<li class="breadcrumb-item"><a href="{{ list_url }}">Danh sách</a></li>{% endif %}<li class="breadcrumb-item active" aria-current="page">{{ page_title }}</li>{% endif %}{% endblock %}
+        </ol>
+      </nav>
       {% include "includes/messages.html" %}
       {% block content %}{% endblock %}
     </main>
   </div>
 </div>
-<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'js/app.js' %}"></script>
-</body>
-</html>
+{% endblock %}
