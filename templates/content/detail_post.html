@@ -1,0 +1,7 @@
+{% if object.category %}<p class="small text-muted">Danh mục: {{ object.category }}{% if object.is_featured %} · <span class="badge text-bg-warning">Nổi bật</span>{% endif %}</p>{% endif %}
+{% if object.section %}<p class="small text-muted">Mục: {{ object.get_section_display }}</p>{% endif %}
+{% if object.thumbnail %}<img src="{{ object.thumbnail.url }}" alt="" class="img-fluid rounded mb-2" style="max-height:260px">
+  <p class="small">{% if object.thumbnail_consent %}<i class="bi bi-check-circle text-success"></i> Đã xác nhận quyền sử dụng ảnh đại diện{% else %}<i class="bi bi-exclamation-triangle text-warning"></i> Chưa xác nhận quyền sử dụng ảnh đại diện{% endif %}</p>{% endif %}
+{% if object.image %}<img src="{{ object.image.url }}" alt="" class="img-fluid rounded mb-2" style="max-height:260px">{% endif %}
+{% if object.summary %}<p class="lead fs-6">{{ object.summary }}</p>{% endif %}
+<div class="article-body">{{ object.body|safe }}</div>

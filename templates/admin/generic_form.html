@@ -1,0 +1,16 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% block form_intro %}{% endblock %}
+      {% include "includes/form_fields.html" %}
+      <div class="mt-4 d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit"><i class="bi bi-save"></i> Lưu</button>
+        <a class="btn btn-outline-secondary" href="{{ list_url }}">Hủy</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

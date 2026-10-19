@@ -1,0 +1,15 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<form class="card mb-3" method="get" role="search"><div class="card-body d-flex gap-2">
+  <label class="visually-hidden" for="q">Từ khóa</label>
+  <input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Số hiệu, trích yếu, tên kế hoạch, mã minh chứng..." minlength="2">
+  <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Tìm</button>
+</div></form>
+<p class="small text-muted">Kết quả chỉ gồm tài liệu bạn được phép xem; tìm kiếm thực hiện trên máy chủ của trường.</p>
+{% if q %}
+  {% if results.docs %}<h2 class="h6">Văn bản</h2><ul>{% for d in results.docs %}<li><a href="{% url 'office:doc_detail' d.pk %}">{{ d }}</a></li>{% endfor %}</ul>{% endif %}
+  {% if results.plans %}<h2 class="h6">Kế hoạch giáo dục</h2><ul>{% for p in results.plans %}<li><a href="{% url 'office:plan_detail' p.pk %}">{{ p }}</a> ({{ p.get_status_display }})</li>{% endfor %}</ul>{% endif %}
+  {% if results.evidence %}<h2 class="h6">Minh chứng</h2><ul>{% for e in results.evidence %}<li><a href="{% url 'office:evidence_detail' e.pk %}">{{ e }}</a></li>{% endfor %}</ul>{% endif %}
+  {% if not results.docs and not results.plans and not results.evidence %}<p class="text-muted">Không tìm thấy kết quả phù hợp.</p>{% endif %}
+{% endif %}
+{% endblock %}

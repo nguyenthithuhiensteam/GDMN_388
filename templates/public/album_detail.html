@@ -1,0 +1,22 @@
+{% extends "base_public.html" %}
+{% block title %}{{ album.title }} · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <p class="small"><a href="{% url 'public:album_list' %}">&laquo; Thư viện ảnh</a></p>
+  <h1 class="h3 fw-bold">{{ album.title }}</h1>
+  <p class="text-muted small">{{ album.get_kind_display }}{% if album.event_date %} · {{ album.event_date|date:"d/m/Y" }}{% endif %}</p>
+  {% if album.description %}<p>{{ album.description|linebreaksbr }}</p>{% endif %}
+  <div class="row g-2">
+    {% for item in items %}
+      <div class="col-6 col-md-4 col-lg-3 gallery-item">
+        {% if item.media_type == "image" %}
+          <a href="{% url 'public:media' item.pk %}" target="_blank" rel="noopener"><img src="{% url 'public:media' item.pk %}" alt="{{ item.caption|default:album.title }}" loading="lazy"></a>
+        {% elif item.youtube_id %}
+          <div class="ratio ratio-16x9"><iframe src="https://www.youtube-nocookie.com/embed/{{ item.youtube_id }}" title="{{ item.caption|default:'Video' }}" allowfullscreen loading="lazy"></iframe></div>
+        {% endif %}
+        {% if item.caption %}<p class="small mt-1">{{ item.caption }}</p>{% endif %}
+      </div>
+    {% empty %}<p class="text-muted">Album chưa có ảnh được phép công khai.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

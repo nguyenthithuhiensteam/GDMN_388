@@ -1,0 +1,24 @@
+{% extends "base_public.html" %}
+{% block title %}{{ post.title }} · {{ school.school_name }}{% endblock %}
+{% block meta_description %}{{ post.summary|default:post.title }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <nav aria-label="breadcrumb"><ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="{% url 'public:home' %}">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'public:post_list' %}">Tin tức</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ post.title|truncatechars:50 }}</li></ol></nav>
+  <div class="row g-4">
+    <article class="col-lg-8">
+      <h1 class="h3 fw-bold">{{ post.title }}</h1>
+      <p class="text-muted small">{{ post.category }} · {{ post.published_at|default:post.created_at|date:"d/m/Y H:i" }}{% if post.author_name %} · {{ post.author_name }}{% endif %}</p>
+      {% if post.summary %}<p class="lead fs-5">{{ post.summary }}</p>{% endif %}
+      {% if post.thumbnail %}<img src="{{ post.thumbnail.url }}" alt="" class="img-fluid rounded mb-3">{% endif %}
+      <div class="article-body">{{ post.body|safe }}</div>
+    </article>
+    <aside class="col-lg-4">
+      <h2 class="section-title h5">Bài viết liên quan</h2>
+      {% for p in related %}<div class="mb-3">{% include "public/_post_card.html" %}</div>{% empty %}<p class="text-muted small">Chưa có bài liên quan.</p>{% endfor %}
+    </aside>
+  </div>
+</div>
+{% endblock %}

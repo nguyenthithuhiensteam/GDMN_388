@@ -1,0 +1,21 @@
+{% extends "base_public.html" %}
+{% block title %}Công khai giáo dục · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Công khai giáo dục</h1>
+  {% for s in sections %}
+  <section class="mb-4">
+    <h2 class="h5 text-primary-mn">{{ s.name }}</h2>
+    {% if s.published_items %}
+    <div class="table-responsive"><table class="table table-sm align-middle bg-white">
+      <thead><tr><th>Nội dung</th><th>Năm học</th><th>Ngày công bố</th><th>Thời hạn</th><th>Tệp</th></tr></thead>
+      <tbody>{% for d in s.published_items %}
+        <tr><td><strong>{{ d.title }}</strong>{% if d.description %}<div class="small text-muted">{{ d.description|truncatechars:200 }}</div>{% endif %}</td>
+          <td>{{ d.school_year|default:"" }}</td><td>{{ d.disclosure_date|date:"d/m/Y" }}</td><td>{{ d.valid_until|date:"d/m/Y" }}</td>
+          <td>{% if d.file %}<a class="btn btn-sm btn-outline-primary" href="{% url 'public:disclosure_file' d.pk %}"><i class="bi bi-download"></i> Tải</a>{% endif %}</td></tr>
+      {% endfor %}</tbody></table></div>
+    {% else %}<p class="small text-muted">Chưa có nội dung công bố.</p>{% endif %}
+  </section>
+  {% empty %}<p class="text-muted">Nội dung công khai đang được cập nhật.</p>{% endfor %}
+</div>
+{% endblock %}

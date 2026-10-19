@@ -1,0 +1,14 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="card border-danger">
+  <div class="card-body">
+    <h2 class="h5 text-danger"><i class="bi bi-exclamation-triangle"></i> Xác nhận xóa</h2>
+    <p>Bạn có chắc muốn xóa <strong>{{ object }}</strong>? Thao tác này không thể hoàn tác và sẽ được ghi vào nhật ký.</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">Xóa</button>
+      <a class="btn btn-outline-secondary" href="{{ list_url }}">Hủy</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base_public.html" %}
+{% block title %}Thư viện ảnh · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Thư viện ảnh, video</h1>
+  <div class="row g-3">
+  {% for a in page_obj %}<div class="col-6 col-md-4 col-lg-3">
+    <a class="card album-card h-100 text-decoration-none" href="{{ a.get_absolute_url }}">
+      {% with c=a.cover %}{% if c %}<img src="{% url 'public:media' c.pk %}" alt="{{ c.caption|default:a.title }}" loading="lazy" class="w-100">{% else %}<div class="placeholder-img"><i class="bi bi-images"></i></div>{% endif %}{% endwith %}
+      <div class="card-body py-2"><div class="fw-semibold text-dark small">{{ a.title }}</div><div class="small text-muted">{{ a.get_kind_display }}{% if a.school_year %} · {{ a.school_year }}{% endif %}</div></div>
+    </a></div>
+  {% empty %}<p class="text-muted">Chưa có album.</p>{% endfor %}
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

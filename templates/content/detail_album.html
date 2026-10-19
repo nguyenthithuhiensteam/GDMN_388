@@ -1,0 +1,40 @@
+{% load ui %}
+<p class="small text-muted">{{ object.get_kind_display }} · {{ object.get_visibility_display }}{% if object.school_year %} · Năm học {{ object.school_year }}{% endif %}{% if object.event_date %} · {{ object.event_date|date:"d/m/Y" }}{% endif %}{% if object.school_class %} · {{ object.school_class.name }}{% endif %}</p>
+<p>{{ object.description|linebreaksbr }}</p>
+<div class="alert alert-warning small"><i class="bi bi-shield-exclamation"></i>
+  Ảnh/video có hình ảnh trẻ em chỉ được hiển thị công khai khi đã được <strong>xác nhận quyền sử dụng hình ảnh</strong>
+  (ví dụ: có phiếu đồng ý của cha mẹ trẻ) và album đã xuất bản ở phạm vi Công khai. Không ghi họ tên trẻ trong chú thích.
+</div>
+{% if can_modify %}
+<form method="post" action="{% url 'content:album_upload' object.pk %}" enctype="multipart/form-data" class="border rounded p-3 mb-3">{% csrf_token %}
+  <h3 class="h6">Tải lên ảnh/video</h3>
+  {% with form=upload_form %}{% include "includes/form_fields.html" %}{% endwith %}
+  <div id="id_images_count" class="small text-muted"></div>
+  <button class="btn btn-primary btn-sm mt-2" type="submit"><i class="bi bi-upload"></i> Tải lên</button>
+</form>
+{% endif %}
+<div class="row g-2">
+{% for item in items %}
+  <div class="col-6 col-md-4">
+    <div class="border rounded p-2 h-100 small">
+      {% if item.media_type == "image" %}
+        <img src="{% url 'content:media_file' item.pk %}" alt="{{ item.caption }}" class="img-fluid rounded mb-1" loading="lazy" style="aspect-ratio:4/3;object-fit:cover;width:100%">
+      {% else %}
+        <div class="ratio ratio-16x9 bg-light d-flex align-items-center justify-content-center mb-1"><a href="{{ item.video_url }}" target="_blank" rel="noopener"><i class="bi bi-youtube fs-2 text-danger"></i></a></div>
+      {% endif %}
+      <div>{{ item.caption|default:"(không chú thích)" }}</div>
+      <div>
+        {% if item.consent_status == "approved" %}<span class="badge text-bg-success">Được công khai</span>
+        {% elif item.consent_status == "rejected" %}<span class="badge text-bg-danger">Không công khai</span>
+        {% else %}<span class="badge text-bg-warning">Chưa kiểm tra quyền</span>{% endif %}
+        {% if item.has_children %}<span class="badge text-bg-light">Có trẻ em</span>{% endif %}
+      </div>
+      <div class="d-flex gap-1 mt-1">
+        {% if can_consent %}<a class="btn btn-sm btn-outline-success" href="{% url 'content:media_consent' item.pk %}">Quyền hình ảnh</a>{% endif %}
+        {% if can_modify %}<a class="btn btn-sm btn-outline-primary" href="{% url 'content:media_edit' item.pk %}" title="Sửa chú thích"><i class="bi bi-pencil"></i><span class="visually-hidden">Sửa</span></a>{% endif %}
+        {% if can_remove %}<form method="post" action="{% url 'content:media_delete' item.pk %}" data-confirm="Xóa ảnh/video này?">{% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit" title="Xóa"><i class="bi bi-trash"></i><span class="visually-hidden">Xóa</span></button></form>{% endif %}
+      </div>
+    </div>
+  </div>
+{% empty %}<p class="text-muted">Album chưa có ảnh/video.</p>{% endfor %}
+</div>

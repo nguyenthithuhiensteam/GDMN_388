@@ -1,0 +1,14 @@
+<div class="card mt-3">
+  <div class="card-body">
+    <h2 class="h6"><i class="bi bi-clock-history"></i> Nhật ký chỉnh sửa</h2>
+    {% if history %}
+    <div class="timeline small">
+      {% for h in history %}
+      <div class="item"><strong>{{ h.created_at|date:"d/m/Y H:i" }}</strong> · {{ h.user|default:"Hệ thống" }} · <code>{{ h.action }}</code>
+        {% if h.changes %}<details><summary class="text-muted">Chi tiết</summary><pre class="small mb-0" style="white-space:pre-wrap">{{ h.changes|pprint }}</pre></details>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<p class="text-muted small mb-0">Chưa có nhật ký.</p>{% endif %}
+  </div>
+</div>

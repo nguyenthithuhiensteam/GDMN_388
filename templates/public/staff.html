@@ -1,0 +1,17 @@
+{% extends "base_public.html" %}
+{% block title %}Đội ngũ · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Đội ngũ cán bộ, giáo viên, nhân viên</h1>
+  {% for label, people in groups %}
+  <h2 class="h5 mt-4">{{ label }}</h2>
+  <div class="row g-3">
+    {% for s in people %}<div class="col-6 col-md-4 col-lg-3"><div class="card h-100 text-center"><div class="card-body">
+      {% if s.photo and s.public_consent %}<img src="{{ s.photo.url }}" alt="Ảnh {{ s.full_name }}" class="rounded-circle mb-2" style="width:110px;height:110px;object-fit:cover">{% else %}<i class="bi bi-person-circle text-secondary" style="font-size:96px" aria-hidden="true"></i>{% endif %}
+      <h3 class="h6 mb-0">{{ s.full_name }}</h3><p class="small text-muted mb-1">{{ s.position }}</p>
+      {% if s.bio and s.public_consent %}<p class="small">{{ s.bio|truncatechars:160 }}</p>{% endif %}
+    </div></div></div>{% endfor %}
+  </div>
+  {% empty %}<p class="text-muted">Thông tin đội ngũ đang được cập nhật.</p>{% endfor %}
+</div>
+{% endblock %}

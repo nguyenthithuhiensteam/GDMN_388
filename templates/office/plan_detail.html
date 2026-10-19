@@ -1,0 +1,68 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'office:plan_list' %}"><i class="bi bi-arrow-left"></i> Danh sách</a>
+  {% if can_modify %}<a class="btn btn-outline-primary btn-sm" href="{% url 'office:plan_edit' object.pk %}"><i class="bi bi-pencil"></i> Chỉnh sửa (tạo phiên bản mới)</a>{% endif %}
+  {% if can_download %}
+  <div class="dropdown">
+    <button class="btn btn-outline-success btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-file-earmark-arrow-down"></i> Xuất tài liệu</button>
+    <ul class="dropdown-menu">
+      {% for t in templates %}
+        <li><h3 class="dropdown-header">{{ t.name }}</h3></li>
+        <li><a class="dropdown-item" href="{% url 'office:plan_export' object.pk 'docx' %}?mau={{ t.pk }}">Word (.docx)</a></li>
+        <li><a class="dropdown-item" href="{% url 'office:plan_export' object.pk 'pdf' %}?mau={{ t.pk }}">PDF</a></li>
+      {% empty %}
+        <li><a class="dropdown-item" href="{% url 'office:plan_export' object.pk 'docx' %}">Word (.docx)</a></li>
+        <li><a class="dropdown-item" href="{% url 'office:plan_export' object.pk 'pdf' %}">PDF</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% if object.file %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'office:plan_download' object.pk %}"><i class="bi bi-paperclip"></i> Tệp đính kèm</a>{% endif %}
+  {% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card"><div class="card-body">
+      {% if object.status != "official" %}<div class="alert alert-{% if object.status == 'approved' %}info{% else %}warning{% endif %} py-2 small">
+        {% if object.status == "approved" %}Nội dung ĐÃ DUYỆT nhưng chưa ban hành chính thức.{% else %}Đây là nội dung DỰ THẢO, chưa có giá trị chính thức.{% endif %}</div>{% endif %}
+      <h2 class="h5">{{ object.title }}</h2>
+      <p class="small text-muted">{{ object.get_level_display }} · Năm học {{ object.school_year }}{% if object.group %} · {{ object.group }}{% endif %}{% if object.school_class %} · {{ object.school_class.name }}{% endif %}{% if object.period_start %} · {{ object.period_start|date:"d/m/Y" }} – {{ object.period_end|date:"d/m/Y" }}{% endif %}{% if object.parent %} · Thuộc: <a href="{% url 'office:plan_detail' object.parent.pk %}">{{ object.parent }}</a>{% endif %}</p>
+      <div style="white-space:pre-wrap">{{ object.content }}</div>
+      {% if children %}<h3 class="h6 mt-3">Kế hoạch con</h3><ul>{% for c in children %}<li><a href="{% url 'office:plan_detail' c.pk %}">{{ c }}</a> ({{ c.get_status_display }})</li>{% endfor %}</ul>{% endif %}
+    </div></div>
+    <div class="card mt-3"><div class="card-body">
+      <h3 class="h6">Góp ý ({{ comments|length }})</h3>
+      {% for c in comments %}<div class="border-bottom py-2 small"><strong>{{ c.user|default:"—" }}</strong> · {{ c.created_at|date:"d/m/Y H:i" }} · trên phiên bản v{{ c.version_no }}<div style="white-space:pre-wrap">{{ c.content }}</div></div>
+      {% empty %}<p class="text-muted small">Chưa có góp ý.</p>{% endfor %}
+      <form method="post" action="{% url 'office:plan_comment' object.pk %}" class="mt-2">{% csrf_token %}
+        {% with form=comment_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <button class="btn btn-sm btn-primary mt-2" type="submit">Gửi góp ý</button></form>
+    </div></div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card"><div class="card-body">
+      <h3 class="h6">Trạng thái</h3>
+      <p><span class="badge text-bg-{{ object.status_badge }} fs-6">{{ object.get_status_display }}</span></p>
+      <dl class="row small">
+        <dt class="col-5">Người lập</dt><dd class="col-7">{{ object.created_by|default:"—" }}</dd>
+        <dt class="col-5">Người duyệt</dt><dd class="col-7">{{ object.approved_by|default:"—" }}{% if object.approved_at %} · {{ object.approved_at|date:"d/m/Y H:i" }}{% endif %}</dd>
+        <dt class="col-5">Ban hành</dt><dd class="col-7">{{ object.official_at|date:"d/m/Y H:i"|default:"—" }}</dd>
+      </dl>
+      {% if transitions %}
+      <form method="post">{% csrf_token %}
+        <label class="form-label small" for="note">Ghi chú</label><input class="form-control form-control-sm mb-2" id="note" name="note" maxlength="255">
+        <div class="d-flex flex-wrap gap-2">{% for t in transitions %}<button class="btn btn-sm btn-outline-primary" type="submit" formaction="{% url 'office:plan_transition' object.pk t.name %}">{{ t.label }}</button>{% endfor %}</div>
+      </form>
+      {% endif %}
+    </div></div>
+    <div class="card mt-3"><div class="card-body">
+      <h3 class="h6">Phiên bản</h3>
+      <ul class="list-unstyled small mb-0">
+      {% for v in versions %}<li class="mb-1"><strong>v{{ v.version_no }}</strong> · {{ v.created_at|date:"d/m/Y H:i" }} · {{ v.created_by|default:"—" }}{% if v.note %}<br><span class="text-muted">{{ v.note }}</span>{% endif %}
+        {% if v.file and can_download %} · <a href="{% url 'office:plan_download_version' object.pk v.version_no %}">tệp</a>{% endif %}</li>{% endfor %}
+      </ul>
+    </div></div>
+    {% include "includes/history.html" %}
+  </div>
+</div>
+{% endblock %}

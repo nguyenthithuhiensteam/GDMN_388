@@ -1,0 +1,12 @@
+{% extends "base_public.html" %}
+{% block title %}{{ obj.title }} · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:900px">
+  <p class="small"><a href="{% url 'public:announcement_list' %}">&laquo; Thông báo</a></p>
+  <span class="badge {% if obj.kind == 'urgent' %}text-bg-danger{% else %}text-bg-primary{% endif %}">{{ obj.get_kind_display }}</span>
+  <h1 class="h3 fw-bold mt-2">{{ obj.title }}</h1>
+  <p class="text-muted small">Ngày đăng: {{ obj.start_date|date:"d/m/Y" }}{% if obj.end_date %} · Hiệu lực đến: {{ obj.end_date|date:"d/m/Y" }}{% endif %}{% if obj.event_date %} · Thời gian diễn ra: {{ obj.event_date|date:"d/m/Y H:i" }}{% endif %}</p>
+  <div class="article-body">{{ obj.body|safe }}</div>
+  {% if obj.attachment and not preview %}<p class="mt-3"><a class="btn btn-outline-primary" href="{% url 'public:announcement_attachment' obj.slug %}"><i class="bi bi-paperclip"></i> Tải tệp đính kèm</a></p>{% endif %}
+</div>
+{% endblock %}

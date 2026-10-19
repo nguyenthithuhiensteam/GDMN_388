@@ -1,0 +1,14 @@
+{% extends "base_public.html" %}
+{% block title %}Tìm kiếm · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Tìm kiếm</h1>
+  <form class="d-flex gap-2 mb-3" method="get" role="search"><label class="visually-hidden" for="q">Từ khóa</label>
+    <input class="form-control" id="q" name="q" value="{{ q }}" minlength="2" placeholder="Nhập ít nhất 2 ký tự"><button class="btn btn-primary" type="submit">Tìm</button></form>
+  {% if q|length >= 2 %}
+    <h2 class="h5">Tin tức</h2><ul>{% for p in results.posts %}<li><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></li>{% empty %}<li class="text-muted">Không có kết quả.</li>{% endfor %}</ul>
+    <h2 class="h5">Thông báo</h2><ul>{% for a in results.announcements %}<li><a href="{{ a.get_absolute_url }}">{{ a.title }}</a></li>{% empty %}<li class="text-muted">Không có kết quả.</li>{% endfor %}</ul>
+    <h2 class="h5">Tài liệu</h2><ul>{% for d in results.documents %}<li><a href="{% url 'public:document_download' d.pk %}">{{ d.title }}</a></li>{% empty %}<li class="text-muted">Không có kết quả.</li>{% endfor %}</ul>
+  {% elif q %}<p class="text-muted">Vui lòng nhập ít nhất 2 ký tự.</p>{% endif %}
+</div>
+{% endblock %}

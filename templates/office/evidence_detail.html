@@ -1,0 +1,39 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'office:evidence_list' %}"><i class="bi bi-arrow-left"></i> Danh sách</a>
+  {% if can_modify %}<a class="btn btn-outline-primary btn-sm" href="{% url 'office:evidence_edit' object.pk %}"><i class="bi bi-pencil"></i> Sửa</a>{% endif %}
+  {% if can_modify and can_delete %}<a class="btn btn-outline-danger btn-sm ms-auto" href="{% url 'office:evidence_delete' object.pk %}"><i class="bi bi-trash"></i> Xóa</a>{% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-8"><div class="card"><div class="card-body">
+    <h2 class="h5">{{ object.code }} – {{ object.title }}</h2>
+    <dl class="row small">
+      <dt class="col-sm-4">Danh mục / tiêu chí</dt><dd class="col-sm-8">{{ object.category }}</dd>
+      <dt class="col-sm-4">Tiêu chí / chỉ báo</dt><dd class="col-sm-8">{{ object.criterion|default:"—" }}</dd>
+      <dt class="col-sm-4">Nguồn</dt><dd class="col-sm-8">{{ object.source|default:"—" }}</dd>
+      <dt class="col-sm-4">Ngày tạo minh chứng</dt><dd class="col-sm-8">{{ object.evidence_date|date:"d/m/Y"|default:"—" }}</dd>
+      <dt class="col-sm-4">Người phụ trách</dt><dd class="col-sm-8">{{ object.responsible|default:"—" }}</dd>
+      <dt class="col-sm-4">Năm học / Điểm trường / Tổ</dt><dd class="col-sm-8">{{ object.school_year|default:"—" }} / {{ object.campus|default:"—" }} / {{ object.group|default:"—" }}</dd>
+      {% if object.plan %}<dt class="col-sm-4">Kế hoạch</dt><dd class="col-sm-8"><a href="{% url 'office:plan_detail' object.plan.pk %}">{{ object.plan }}</a></dd>{% endif %}
+      {% if object.task %}<dt class="col-sm-4">Nhiệm vụ</dt><dd class="col-sm-8"><a href="{% url 'office:task_detail' object.task.pk %}">{{ object.task }}</a></dd>{% endif %}
+      <dt class="col-sm-4">Báo cáo liên quan</dt><dd class="col-sm-8">{{ object.report_ref|default:"—" }}</dd>
+      <dt class="col-sm-4">Phạm vi</dt><dd class="col-sm-8">{{ object.get_access_level_display }}</dd>
+    </dl>
+    <p style="white-space:pre-wrap">{{ object.description }}</p>
+    <h3 class="h6 mt-3">Tệp minh chứng (mọi phiên bản được giữ lại, không ghi đè)</h3>
+    <div class="table-responsive"><table class="table table-sm">
+      <thead><tr><th>Phiên bản</th><th>Tệp gốc</th><th>Ghi chú</th><th>Người tải</th><th>Thời điểm</th><th></th></tr></thead>
+      <tbody>{% for f in files %}<tr><td>v{{ f.version_no }}{% if forloop.first %} <span class="badge text-bg-success">Hiện hành</span>{% endif %}</td><td>{{ f.original_name }}</td><td>{{ f.note }}</td><td>{{ f.uploaded_by|default:"—" }}</td><td>{{ f.uploaded_at|date:"d/m/Y H:i" }}</td>
+        <td>{% if can_download %}<a href="{% url 'office:evidence_download' object.pk f.version_no %}">Tải</a>{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="6" class="text-muted">Chưa có tệp.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% if can_modify %}
+    <form method="post" action="{% url 'office:evidence_upload' object.pk %}" enctype="multipart/form-data" class="border rounded p-3">{% csrf_token %}
+      {% with form=file_form %}{% include "includes/form_fields.html" %}{% endwith %}
+      <button class="btn btn-sm btn-primary mt-2" type="submit"><i class="bi bi-upload"></i> Tải lên phiên bản mới</button></form>
+    {% endif %}
+  </div></div></div>
+  <div class="col-lg-4">{% include "includes/history.html" %}</div>
+</div>
+{% endblock %}

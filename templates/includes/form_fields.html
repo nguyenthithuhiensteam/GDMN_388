@@ -1,0 +1,25 @@
+{% if form.non_field_errors %}
+<div class="alert alert-danger" role="alert">{% for e in form.non_field_errors %}<div>{{ e }}</div>{% endfor %}</div>
+{% endif %}
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+<div class="row g-3">
+{% for field in form.visible_fields %}
+  {% with w=field.field.widget.input_type %}
+  <div class="{% if field.field.widget.attrs.rows or field.name == 'body' or field.name == 'content' or field.name == 'description' %}col-12{% else %}col-md-6{% endif %}">
+    {% if w == "checkbox" %}
+      <div class="form-check mt-md-4">
+        {{ field }}
+        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      </div>
+    {% else %}
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger" aria-hidden="true">*</span>{% endif %}</label>
+      {% if field.errors %}
+        <div class="is-invalid-wrap">{{ field }}</div>
+      {% else %}{{ field }}{% endif %}
+    {% endif %}
+    {% if field.help_text %}<div class="form-text">{{ field.help_text|safe }}</div>{% endif %}
+    {% if field.errors %}<ul class="errorlist" id="{{ field.id_for_label }}_errors">{% for e in field.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+  {% endwith %}
+{% endfor %}
+</div>

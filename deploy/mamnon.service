@@ -1,0 +1,19 @@
+# /etc/systemd/system/mamnon.service
+[Unit]
+Description=Website quan tri truong mam non (Gunicorn)
+After=network.target postgresql.service
+
+[Service]
+User=mamnon
+Group=www-data
+WorkingDirectory=/srv/mamnon/app
+EnvironmentFile=/srv/mamnon/app/.env
+RuntimeDirectory=mamnon
+ExecStart=/srv/mamnon/venv/bin/gunicorn -c deploy/gunicorn.conf.py config.wsgi
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

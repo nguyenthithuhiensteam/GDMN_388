@@ -1,0 +1,17 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-7"><div class="card"><div class="card-body">
+    <h2 class="h5">{{ obj.subject }}</h2>
+    <p class="small text-muted">{{ obj.created_at|date:"d/m/Y H:i" }} · {{ obj.name }}{% if obj.email %} · {{ obj.email }}{% endif %}{% if obj.phone %} · {{ obj.phone }}{% endif %}</p>
+    <p style="white-space:pre-wrap">{{ obj.message }}</p>
+  </div></div></div>
+  <div class="col-lg-5"><div class="card"><div class="card-body">
+    <form method="post">{% csrf_token %}{% include "includes/form_fields.html" %}
+      <button class="btn btn-primary mt-3" type="submit">Cập nhật</button></form>
+    {% if can_delete %}
+    <form method="post" action="{% url 'core:contact_delete' obj.pk %}" class="mt-3" data-confirm="Xóa liên hệ này? Thao tác không thể hoàn tác.">{% csrf_token %}
+      <button class="btn btn-outline-danger btn-sm" type="submit">Xóa liên hệ</button></form>{% endif %}
+  </div></div></div>
+</div>
+{% endblock %}

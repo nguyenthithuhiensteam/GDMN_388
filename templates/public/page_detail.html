@@ -1,0 +1,9 @@
+{% extends "base_public.html" %}
+{% block title %}{{ page.title }} · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4" style="max-width:960px">
+  <h1 class="section-title h3">{{ page.title }}</h1>
+  {% if page.image %}<img src="{{ page.image.url }}" alt="" class="img-fluid rounded mb-3">{% endif %}
+  <div class="article-body">{{ page.body|safe }}</div>
+</div>
+{% endblock %}

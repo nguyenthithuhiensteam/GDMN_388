@@ -1,0 +1,32 @@
+<p class="small text-muted">Mục: {{ object.section }}{% if object.school_year %} · Năm học {{ object.school_year }}{% endif %}</p>
+<dl class="row small">
+  <dt class="col-sm-4">Ngày công bố</dt><dd class="col-sm-8">{{ object.disclosure_date|date:"d/m/Y"|default:"—" }}</dd>
+  <dt class="col-sm-4">Thời hạn công khai</dt><dd class="col-sm-8">{{ object.valid_until|date:"d/m/Y"|default:"—" }}</dd>
+  <dt class="col-sm-4">Hạn rà soát</dt><dd class="col-sm-8">{{ object.review_due|date:"d/m/Y"|default:"—" }}
+    {% if object.review_state == "overdue" %}<span class="badge text-bg-danger">Quá hạn rà soát</span>{% elif object.review_state == "soon" %}<span class="badge text-bg-warning">Sắp đến hạn</span>{% endif %}</dd>
+  <dt class="col-sm-4">Người phụ trách</dt><dd class="col-sm-8">{{ object.responsible|default:"—" }}</dd>
+</dl>
+<p>{{ object.description|linebreaksbr }}</p>
+{% if object.file %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'content:disclosure_download' object.pk %}"><i class="bi bi-download"></i> Tệp hiện tại</a>{% endif %}
+<div class="mt-3 p-3 rounded {% if object.authority_checked %}bg-success-subtle{% else %}bg-warning-subtle{% endif %}">
+  <h3 class="h6">Kiểm tra của người có thẩm quyền</h3>
+  {% if object.authority_checked %}
+    <p class="small mb-1"><i class="bi bi-check-circle"></i> Đã được {{ object.authority_checked_by }} xác nhận kiểm tra.{% if object.authority_note %} Ghi chú: {{ object.authority_note }}{% endif %}</p>
+  {% else %}
+    <p class="small mb-1">Chưa được xác nhận. Hệ thống không tự khẳng định tài liệu đáp ứng quy định pháp luật; cần người có thẩm quyền kiểm tra trước khi xuất bản.</p>
+  {% endif %}
+  {% if can_check %}
+  <form method="post" action="{% url 'content:disclosure_check' object.pk %}" class="mt-2">{% csrf_token %}
+    {% with form=check_form %}{% include "includes/form_fields.html" %}{% endwith %}
+    <button class="btn btn-sm btn-success mt-2" type="submit">Cập nhật xác nhận</button>
+  </form>
+  {% endif %}
+</div>
+<h3 class="h6 mt-4">Lịch sử cập nhật</h3>
+<div class="table-responsive"><table class="table table-sm">
+  <thead><tr><th>Phiên bản</th><th>Thời điểm</th><th>Người cập nhật</th><th>Ghi chú</th><th>Tệp</th></tr></thead>
+  <tbody>{% for v in versions %}
+    <tr><td>v{{ v.version_no }}</td><td>{{ v.created_at|date:"d/m/Y H:i" }}</td><td>{{ v.created_by|default:"—" }}</td><td>{{ v.note }}</td>
+      <td>{% if v.file %}<a href="{% url 'content:disclosure_download_version' object.pk v.version_no %}">Tải</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted">Chưa có lịch sử.</td></tr>{% endfor %}</tbody>
+</table></div>

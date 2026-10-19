@@ -1,0 +1,9 @@
+{% extends "base_admin.html" %}
+{% block content %}
+{% include "ai/_status.html" %}
+<div class="card"><div class="card-body">
+  <form method="post" novalidate>{% csrf_token %}{% include "includes/form_fields.html" %}
+    <button class="btn btn-primary mt-3" type="submit" {% if not ai_available %}disabled{% endif %}><i class="bi bi-stars"></i> Gợi ý</button></form>
+</div></div>
+{% include "ai/_result.html" %}
+{% endblock %}

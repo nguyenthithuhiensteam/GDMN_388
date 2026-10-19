@@ -1,0 +1,74 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<p class="text-muted">Xin chào <strong>{{ user.get_full_name }}</strong> ({{ user.role_label }}). Số liệu dưới đây được tính theo phạm vi quyền của bạn.</p>
+{% if alerts %}
+<section aria-labelledby="alerts-h" class="mb-3">
+  <h2 id="alerts-h" class="h6">Cần xử lý</h2>
+  {% for level, text, url in alerts %}
+    <a class="alert alert-{{ level }} d-flex justify-content-between align-items-center py-2 mb-2 text-decoration-none" href="{% url url %}">
+      <span>{{ text }}</span><i class="bi bi-chevron-right"></i></a>
+  {% endfor %}
+</section>
+{% endif %}
+<div class="row g-3 mb-3">
+  {% for label, value, url, icon in cards %}
+  <div class="col-6 col-md-4 col-xl-3">
+    <a class="card stat-card h-100 text-decoration-none" href="{% url url %}">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div><div class="stat-value">{{ value }}</div><div class="text-muted small">{{ label }}</div></div>
+        <i class="bi bi-{{ icon }} stat-icon" aria-hidden="true"></i>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-calendar-event"></i> Công việc sắp đến hạn (7 ngày)</h2>
+      <ul class="list-group list-group-flush">
+      {% for t in upcoming_tasks %}
+        <li class="list-group-item d-flex justify-content-between px-0">
+          <a href="{% url 'office:task_detail' t.pk %}">{{ t.title }}</a>
+          <span class="badge text-bg-{{ t.status_badge }}">{{ t.due_date|date:"d/m/Y" }} · {{ t.display_status }}</span>
+        </li>
+      {% empty %}<li class="list-group-item px-0 text-muted">Không có công việc sắp đến hạn.</li>{% endfor %}
+      </ul>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-folder2-open"></i> Văn bản mới cập nhật</h2>
+      <ul class="list-group list-group-flush">
+      {% for d in recent_docs %}
+        <li class="list-group-item px-0"><a href="{% url 'office:doc_detail' d.pk %}">{{ d }}</a>
+          <div class="small text-muted">{{ d.updated_at|date:"d/m/Y H:i" }} · {{ d.get_processing_status_display }}</div></li>
+      {% empty %}<li class="list-group-item px-0 text-muted">Chưa có văn bản.</li>{% endfor %}
+      </ul>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-bell"></i> Nhắc việc chưa đọc</h2>
+      <ul class="list-group list-group-flush">
+      {% for n in notifications %}
+        <li class="list-group-item px-0 d-flex justify-content-between gap-2">
+          <span>{{ n.message }}<br><small class="text-muted">{{ n.created_at|date:"d/m/Y H:i" }}</small></span>
+          <form method="post" action="{% url 'core:notification_read' n.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">Mở</button></form>
+        </li>
+      {% empty %}<li class="list-group-item px-0 text-muted">Không có nhắc việc mới.</li>{% endfor %}
+      </ul>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100"><div class="card-body">
+      <h2 class="h6"><i class="bi bi-activity"></i> Hoạt động gần đây</h2>
+      <ul class="list-unstyled small mb-0">
+      {% for a in activity %}
+        <li class="mb-1"><span class="text-muted">{{ a.created_at|date:"d/m H:i" }}</span> · {{ a.user|default:"Hệ thống" }} · <code>{{ a.action }}</code> {{ a.object_repr|truncatechars:60 }}</li>
+      {% empty %}<li class="text-muted">Chưa có hoạt động.</li>{% endfor %}
+      </ul>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

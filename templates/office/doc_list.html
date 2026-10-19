@@ -1,0 +1,10 @@
+{% extends "admin/generic_list.html" %}
+{% block extra_filters %}
+<div class="col-6 col-md-2"><label class="form-label small" for="tu_ngay">Ban hành từ</label>
+  <input class="form-control" id="tu_ngay" name="tu_ngay" value="{{ tu_ngay }}" placeholder="dd/mm/yyyy"></div>
+<div class="col-6 col-md-2"><label class="form-label small" for="den_ngay">Đến ngày</label>
+  <input class="form-control" id="den_ngay" name="den_ngay" value="{{ den_ngay }}" placeholder="dd/mm/yyyy"></div>
+{% endblock %}
+{% block list_actions %}
+{% if can_export %}<a class="btn btn-outline-success" href="{% url 'office:doc_export' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>{% endif %}
+{% endblock %}

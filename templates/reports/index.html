@@ -1,0 +1,28 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="card mb-3"><div class="card-body">
+  <form class="row g-2 align-items-end" method="get">
+    {% for field in form %}<div class="col-6 col-md-3"><label class="form-label small" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+      {% for e in field.errors %}<div class="errorlist">{{ e }}</div>{% endfor %}</div>{% endfor %}
+    <div class="col-12 d-flex flex-wrap gap-2">
+      <button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel"></i> Xem báo cáo</button>
+      {% if can_export %}
+      <a class="btn btn-outline-success" href="{% url 'reports:export' 'xlsx' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a>
+      <a class="btn btn-outline-danger" href="{% url 'reports:export' 'pdf' %}?{{ querystring }}"><i class="bi bi-file-earmark-pdf"></i> Xuất PDF</a>
+      {% endif %}
+    </div>
+  </form>
+  <p class="small text-muted mt-2 mb-0">Số liệu được tính từ dữ liệu thật trong hệ thống, chỉ trong phạm vi bạn được phép xem. Thao tác xuất dữ liệu được ghi nhật ký.</p>
+</div></div>
+<div class="row g-3">
+{% for title, headers, rows in sections %}
+  <div class="col-xl-6"><div class="card h-100"><div class="card-body">
+    <h2 class="h6">{{ title }}</h2>
+    <div class="table-responsive"><table class="table table-sm mb-0">
+      <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for r in rows %}<tr>{% for c in r %}<td>{{ c }}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="{{ headers|length }}" class="text-muted">Không có dữ liệu.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div></div></div>
+{% empty %}<p class="text-muted">Bạn chưa được phân quyền xem dữ liệu báo cáo nào.</p>{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="card mb-3"><div class="card-body">
+  <form class="row g-2 align-items-end" method="get">
+    <div class="col-md-4"><label class="form-label small" for="id_q">Tìm</label>{{ form.q }}</div>
+    <div class="col-6 col-md-2"><label class="form-label small" for="id_date_from">Từ ngày</label>{{ form.date_from }}</div>
+    <div class="col-6 col-md-2"><label class="form-label small" for="id_date_to">Đến ngày</label>{{ form.date_to }}</div>
+    <div class="col-auto"><button class="btn btn-outline-primary" type="submit">Lọc</button></div>
+    {% if can_export %}<div class="col-auto ms-auto"><a class="btn btn-outline-success" href="{% url 'reports:audit_export' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</a></div>{% endif %}
+  </form>
+</div></div>
+<div class="card"><div class="table-responsive">
+<table class="table table-sm table-hover mb-0">
+  <thead><tr><th>Thời điểm</th><th>Người thực hiện</th><th>Thao tác</th><th>Chức năng</th><th>Đối tượng</th><th>IP</th></tr></thead>
+  <tbody>
+  {% for a in page_obj %}
+    <tr><td class="text-nowrap">{{ a.created_at|date:"d/m/Y H:i:s" }}</td><td>{{ a.user|default:"—" }}</td><td><code>{{ a.action }}</code></td>
+      <td>{{ a.module }}</td><td>{{ a.object_repr|truncatechars:80 }}</td><td class="small">{{ a.ip_address|default:"" }}</td></tr>
+  {% empty %}<tr><td colspan="6" class="text-center text-muted py-4">Không có nhật ký.</td></tr>{% endfor %}
+  </tbody>
+</table></div></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

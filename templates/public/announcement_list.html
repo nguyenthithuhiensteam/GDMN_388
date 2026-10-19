@@ -1,0 +1,21 @@
+{% extends "base_public.html" %}
+{% block title %}Thông báo · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Thông báo</h1>
+  <ul class="nav nav-pills mb-3 flex-wrap">
+    <li class="nav-item"><a class="nav-link {% if not kind %}active{% endif %}" href="?">Tất cả</a></li>
+    {% for k, v in kinds %}<li class="nav-item"><a class="nav-link {% if kind == k %}active{% endif %}" href="?loai={{ k }}">{{ v }}</a></li>{% endfor %}
+  </ul>
+  <div class="list-group">
+    {% for a in page_obj %}
+      <a class="list-group-item list-group-item-action ann-item {% if a.kind == 'urgent' %}urgent{% endif %}" href="{{ a.get_absolute_url }}">
+        <div class="d-flex justify-content-between flex-wrap gap-2"><span class="fw-semibold">{% if a.is_pinned %}<i class="bi bi-pin-angle-fill text-danger"></i> {% endif %}{{ a.title }}</span>
+          <small class="text-muted">{{ a.get_kind_display }} · {{ a.start_date|date:"d/m/Y" }}{% if a.end_date %} – {{ a.end_date|date:"d/m/Y" }}{% endif %}</small></div>
+        {% if a.event_date %}<small><i class="bi bi-calendar-event"></i> {{ a.event_date|date:"d/m/Y H:i" }}</small>{% endif %}
+      </a>
+    {% empty %}<p class="text-muted">Hiện chưa có thông báo.</p>{% endfor %}
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

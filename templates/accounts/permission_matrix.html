@@ -1,0 +1,28 @@
+{% extends "base_admin.html" %}
+{% block title %}Ma trận phân quyền{% endblock %}
+{% block content %}
+<div class="alert alert-info small">
+  Quyền được kiểm tra ở phía máy chủ cho mọi thao tác. Vai trò <strong>Quản trị hệ thống</strong> luôn có toàn quyền và không hiển thị ở đây.
+  Ngoài quyền theo chức năng, dữ liệu còn được giới hạn theo phạm vi: Giáo viên/Nhân viên chỉ thấy dữ liệu của mình và được giao;
+  Tổ trưởng thấy dữ liệu của tổ; Lãnh đạo, Văn phòng thấy toàn trường.
+  {% if not can_edit_matrix %}<br><strong>Bạn chỉ có quyền xem.</strong> Chỉ Quản trị hệ thống được thay đổi ma trận.{% endif %}
+</div>
+<form method="post" data-confirm="Lưu thay đổi ma trận phân quyền?">{% csrf_token %}
+<div class="card"><div class="table-responsive" style="max-height:70vh">
+<table class="table table-sm table-bordered matrix-table mb-0">
+  <thead class="sticky-top"><tr><th scope="col">Chức năng / Thao tác</th>{% for r, label in roles %}<th scope="col" class="small">{{ label }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for row in rows %}
+    {% ifchanged row.module %}<tr class="table-light"><th colspan="{{ roles|length|add:1 }}" scope="rowgroup">{{ row.module_label }}</th></tr>{% endifchanged %}
+    <tr>
+      <td class="ps-4">{{ row.action_label }}</td>
+      {% for c in row.cells %}
+      <td><input class="form-check-input" type="checkbox" name="p__{{ c.role }}__{{ row.module }}__{{ row.action }}" aria-label="{{ row.module_label }} - {{ row.action_label }} - {{ c.role }}" {% if c.checked %}checked{% endif %} {% if not can_edit_matrix %}disabled{% endif %}></td>
+      {% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div></div>
+{% if can_edit_matrix %}<button class="btn btn-primary mt-3" type="submit"><i class="bi bi-save"></i> Lưu ma trận</button>{% endif %}
+</form>
+{% endblock %}

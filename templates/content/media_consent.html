@@ -1,0 +1,15 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="card" style="max-width:720px"><div class="card-body">
+  <div class="row g-3">
+    <div class="col-md-5">{% if item.media_type == "image" %}<img src="{% url 'content:media_file' item.pk %}" alt="{{ item.caption }}" class="img-fluid rounded">{% else %}<a href="{{ item.video_url }}" target="_blank" rel="noopener">{{ item.video_url }}</a>{% endif %}</div>
+    <div class="col-md-7">
+      <p class="small">Album: <a href="{% url 'content:album_detail' item.album_id %}">{{ item.album }}</a></p>
+      <div class="alert alert-info small">Chỉ xác nhận "Được phép công khai" khi đã có căn cứ hợp lệ (ví dụ phiếu đồng ý của cha mẹ/người giám hộ đối với hình ảnh trẻ). Ghi rõ căn cứ để phục vụ kiểm tra.</div>
+      <form method="post">{% csrf_token %}{% include "includes/form_fields.html" %}
+        <button class="btn btn-primary mt-3" type="submit">Lưu</button>
+        <a class="btn btn-outline-secondary mt-3" href="{% url 'content:album_detail' item.album_id %}">Hủy</a></form>
+    </div>
+  </div>
+</div></div>
+{% endblock %}

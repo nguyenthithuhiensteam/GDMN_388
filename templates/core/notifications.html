@@ -1,0 +1,14 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<form method="post" action="{% url 'core:notification_read_all' %}" class="mb-3">{% csrf_token %}
+  <button class="btn btn-outline-secondary btn-sm" type="submit">Đánh dấu tất cả đã đọc</button></form>
+<div class="card"><ul class="list-group list-group-flush">
+{% for n in page_obj %}
+  <li class="list-group-item d-flex justify-content-between align-items-center gap-2 {% if not n.is_read %}fw-semibold{% endif %}">
+    <span>{{ n.message }}<br><small class="text-muted fw-normal">{{ n.created_at|date:"d/m/Y H:i" }}</small></span>
+    <form method="post" action="{% url 'core:notification_read' n.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-primary" type="submit">{% if n.url %}Mở{% else %}Đã đọc{% endif %}</button></form>
+  </li>
+{% empty %}<li class="list-group-item text-muted">Không có nhắc việc.</li>{% endfor %}
+</ul></div>
+{% include "includes/pagination.html" %}
+{% endblock %}

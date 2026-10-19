@@ -1,0 +1,10 @@
+<article class="card post-card h-100">
+  <a href="{{ p.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+    {% if p.thumbnail %}<img src="{{ p.thumbnail.url }}" alt="" loading="lazy" class="w-100">{% else %}<div class="placeholder-img"><i class="bi bi-flower2"></i></div>{% endif %}
+  </a>
+  <div class="card-body">
+    <p class="small text-muted mb-1">{{ p.category }} · {{ p.published_at|date:"d/m/Y" }}</p>
+    <h3 class="card-title h6"><a href="{{ p.get_absolute_url }}">{{ p.title }}</a></h3>
+    {% if p.summary %}<p class="card-text small text-muted">{{ p.summary|truncatechars:140 }}</p>{% endif %}
+  </div>
+</article>

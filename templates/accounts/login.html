@@ -1,0 +1,20 @@
+{% extends "base_public.html" %}
+{% block title %}Đăng nhập · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:480px">
+  <div class="card">
+    <div class="card-body p-4">
+      <h1 class="h4 mb-3 text-center">Đăng nhập hệ thống quản trị</h1>
+      {% if revoked %}<div class="alert alert-warning">Phiên đăng nhập đã kết thúc hoặc bị thu hồi. Vui lòng đăng nhập lại.</div>{% endif %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="btn btn-primary w-100 mt-3" type="submit">Đăng nhập</button>
+      </form>
+      <p class="text-center mt-3 mb-0"><a href="{% url 'accounts:password_reset' %}">Quên mật khẩu?</a></p>
+    </div>
+  </div>
+  <p class="text-muted small text-center mt-3">Chỉ dành cho cán bộ, giáo viên, nhân viên nhà trường.</p>
+</div>
+{% endblock %}

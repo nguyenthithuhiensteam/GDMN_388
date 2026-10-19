@@ -1,0 +1,3 @@
+<p class="small text-muted">{{ object.get_category_display }} · Lượt tải công khai: {{ object.download_count }}</p>
+<p>{{ object.description|linebreaksbr }}</p>
+{% if object.file %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'content:pubdoc_download' object.pk %}"><i class="bi bi-download"></i> Tải tệp</a>{% endif %}

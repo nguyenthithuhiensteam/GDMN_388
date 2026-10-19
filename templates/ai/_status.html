@@ -1,0 +1,5 @@
+{% if not ai_available %}
+<div class="alert alert-secondary"><i class="bi bi-plug"></i> Mô-đun AI <strong>chưa được bật/cấu hình</strong> trên máy chủ (AI_ENABLED, ANTHROPIC_API_KEY, gói anthropic). Các chức năng khác của hệ thống vẫn hoạt động bình thường. Liên hệ quản trị hệ thống nếu cần sử dụng.</div>
+{% endif %}
+<div class="alert alert-warning small"><i class="bi bi-exclamation-triangle"></i> {{ legal_warning }}
+  Không nhập họ tên, ngày sinh, hình ảnh hay thông tin sức khỏe của trẻ; hệ thống tự che email, số điện thoại, số định danh trước khi gửi nhưng không thể nhận diện mọi thông tin nhạy cảm.</div>

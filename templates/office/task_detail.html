@@ -1,0 +1,56 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'office:task_list' %}"><i class="bi bi-arrow-left"></i> Danh sách</a>
+  {% if can_modify %}<a class="btn btn-outline-primary btn-sm" href="{% url 'office:task_edit' object.pk %}"><i class="bi bi-pencil"></i> Sửa</a>{% endif %}
+  {% if can_modify and can_delete %}<a class="btn btn-outline-danger btn-sm ms-auto" href="{% url 'office:task_delete' object.pk %}"><i class="bi bi-trash"></i> Xóa</a>{% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">{{ object.title }} <span class="badge text-bg-{{ object.status_badge }}">{{ object.display_status }}</span></h2>
+      <dl class="row small">
+        <dt class="col-sm-3">Giao cho</dt><dd class="col-sm-9">{{ object.target_label }}</dd>
+        <dt class="col-sm-3">Người giao</dt><dd class="col-sm-9">{{ object.created_by|default:"—" }} · {{ object.created_at|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-sm-3">Thời hạn</dt><dd class="col-sm-9">{{ object.due_date|date:"d/m/Y"|default:"—" }}</dd>
+        <dt class="col-sm-3">Ưu tiên</dt><dd class="col-sm-9">{{ object.get_priority_display }}</dd>
+        {% if object.plan %}<dt class="col-sm-3">Kế hoạch</dt><dd class="col-sm-9"><a href="{% url 'office:plan_detail' object.plan.pk %}">{{ object.plan }}</a></dd>{% endif %}
+        {% if object.completed_at %}<dt class="col-sm-3">Hoàn thành</dt><dd class="col-sm-9">{{ object.completed_at|date:"d/m/Y H:i" }} · xác nhận: {{ object.confirmed_by }}</dd>{% endif %}
+      </dl>
+      <div style="white-space:pre-wrap">{{ object.description }}</div>
+    </div></div>
+    <div class="card mt-3"><div class="card-body">
+      <h3 class="h6">Nhận xét, phản hồi & lịch sử xử lý</h3>
+      {% for c in comments %}
+        <div class="border-bottom py-2 small {% if c.is_system %}text-muted{% endif %}"><strong>{{ c.user|default:"—" }}</strong> · {{ c.created_at|date:"d/m/Y H:i" }}{% if c.is_system %} <i class="bi bi-arrow-repeat"></i>{% endif %}
+          <div style="white-space:pre-wrap">{{ c.content }}</div></div>
+      {% empty %}<p class="text-muted small">Chưa có trao đổi.</p>{% endfor %}
+      <form method="post" action="{% url 'office:task_comment' object.pk %}" class="mt-2">{% csrf_token %}
+        {% with form=comment_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <button class="btn btn-sm btn-primary mt-2" type="submit">Gửi</button></form>
+    </div></div>
+  </div>
+  <div class="col-lg-4">
+    {% if status_form %}
+    <div class="card"><div class="card-body">
+      <h3 class="h6">Cập nhật tiến độ</h3>
+      <form method="post" action="{% url 'office:task_status' object.pk %}">{% csrf_token %}
+        {% with form=status_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <button class="btn btn-sm btn-primary mt-2" type="submit">Cập nhật</button></form>
+    </div></div>
+    {% endif %}
+    <div class="card mt-3"><div class="card-body">
+      <h3 class="h6">Minh chứng đính kèm</h3>
+      <ul class="list-unstyled small">
+        {% for a in attachments %}<li class="mb-1"><a href="{% url 'office:task_attachment' a.pk %}"><i class="bi bi-paperclip"></i> {{ a.original_name|default:"Tệp" }}</a><br><span class="text-muted">{{ a.uploaded_by|default:"—" }} · {{ a.uploaded_at|date:"d/m/Y H:i" }}{% if a.description %} · {{ a.description }}{% endif %}</span></li>
+        {% empty %}<li class="text-muted">Chưa có minh chứng.</li>{% endfor %}
+      </ul>
+      {% if can_attach %}
+      <form method="post" action="{% url 'office:task_attach' object.pk %}" enctype="multipart/form-data">{% csrf_token %}
+        {% with form=attach_form %}{% include "includes/form_fields.html" %}{% endwith %}
+        <button class="btn btn-sm btn-outline-primary mt-2" type="submit"><i class="bi bi-upload"></i> Tải lên</button></form>
+      {% endif %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base_admin.html" %}
+{% load ui %}
+{% block content %}
+{% if org_entities %}
+<ul class="nav nav-pills mb-3 flex-wrap">
+  {% for key, label in org_entities %}
+  <li class="nav-item"><a class="nav-link {% if key == entity %}active{% endif %}" href="{% url 'org:list' key %}">{{ label }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+<div class="card mb-3">
+  <div class="card-body">
+    <form class="row g-2 align-items-end js-autofilter" method="get" role="search">
+      {% if has_search %}
+      <div class="col-12 col-md-4">
+        <label class="form-label small" for="q">Tìm kiếm</label>
+        <input class="form-control" id="q" type="search" name="q" value="{{ q }}" placeholder="Nhập từ khóa...">
+      </div>
+      {% endif %}
+      {% for f in filters %}
+      <div class="col-6 col-md-2">
+        <label class="form-label small" for="f_{{ f.name }}">{{ f.label|capfirst }}</label>
+        <select class="form-select" id="f_{{ f.name }}" name="{{ f.name }}">
+          <option value="">Tất cả</option>
+          {% for val, lbl in f.options %}<option value="{{ val }}" {% if val == f.value %}selected{% endif %}>{{ lbl }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      {% block extra_filters %}{% endblock %}
+      <div class="col-auto">
+        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-funnel"></i> Lọc</button>
+        <a class="btn btn-link" href="{{ request.path }}">Xóa lọc</a>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-2">
+  <div class="text-muted small">{% if page_obj %}{{ page_obj.paginator.count }}{% else %}{{ object_list|length }}{% endif %} mục</div>
+  <div class="d-flex flex-wrap gap-2">
+    {% block list_actions %}{% endblock %}
+    {% if can_create %}<a class="btn btn-primary" href="{% row_url url_prefix 'create' None entity %}"><i class="bi bi-plus-lg"></i> Thêm mới</a>{% endif %}
+  </div>
+</div>
+{% block before_table %}{% endblock %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <caption class="visually-hidden">{{ page_title }}</caption>
+      <thead><tr>
+        {% for attr, label in columns %}<th scope="col">{{ label }}</th>{% endfor %}
+        <th scope="col" class="text-end">Thao tác</th>
+      </tr></thead>
+      <tbody>
+      {% for obj in object_list %}
+        <tr>
+          {% for attr, label in columns %}
+            <td>{% if forloop.first and has_detail %}<a href="{% row_url url_prefix 'detail' obj entity %}">{% cell obj attr %}</a>{% else %}{% cell obj attr %}{% endif %}</td>
+          {% endfor %}
+          <td class="text-end text-nowrap">
+            {% if has_detail %}<a class="btn btn-sm btn-outline-secondary" href="{% row_url url_prefix 'detail' obj entity %}" title="Xem"><i class="bi bi-eye"></i><span class="visually-hidden">Xem</span></a>{% endif %}
+            {% if can_edit %}<a class="btn btn-sm btn-outline-primary" href="{% row_url url_prefix 'edit' obj entity %}" title="Sửa"><i class="bi bi-pencil"></i><span class="visually-hidden">Sửa</span></a>{% endif %}
+            {% if can_delete %}<a class="btn btn-sm btn-outline-danger" href="{% row_url url_prefix 'delete' obj entity %}" title="Xóa"><i class="bi bi-trash"></i><span class="visually-hidden">Xóa</span></a>{% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="{{ columns|length|add:1 }}" class="text-center text-muted py-4">Chưa có dữ liệu.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

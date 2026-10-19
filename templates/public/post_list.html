@@ -1,0 +1,19 @@
+{% extends "base_public.html" %}
+{% block title %}Tin tức · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Tin tức và hoạt động{% if category %}: {{ category }}{% endif %}</h1>
+  <form class="row g-2 mb-3" method="get" role="search">
+    <div class="col-md-6"><label class="visually-hidden" for="q">Từ khóa</label><input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Tìm tin bài..."></div>
+    <div class="col-md-4"><label class="visually-hidden" for="dm">Danh mục</label>
+      <select class="form-select" id="dm" name="danh-muc"><option value="">Tất cả danh mục</option>
+        {% for c in categories %}<option value="{{ c.slug }}" {% if category and category.pk == c.pk %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Lọc</button></div>
+  </form>
+  <div class="row g-3">
+    {% for p in page_obj %}<div class="col-sm-6 col-lg-4">{% include "public/_post_card.html" %}</div>
+    {% empty %}<p class="text-muted">Không có tin bài phù hợp.</p>{% endfor %}
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

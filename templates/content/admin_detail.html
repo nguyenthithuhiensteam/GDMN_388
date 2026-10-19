@@ -1,0 +1,45 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-secondary btn-sm" href="{{ list_url }}"><i class="bi bi-arrow-left"></i> Danh sách</a>
+  {% if can_modify %}<a class="btn btn-outline-primary btn-sm" href="{% url url_prefix|add:'_edit' object.pk %}"><i class="bi bi-pencil"></i> Sửa</a>{% endif %}
+  {% if kind == "tin-tuc" or kind == "trang" or kind == "thong-bao" %}<a class="btn btn-outline-info btn-sm" href="{% url 'public:preview' kind object.pk %}" target="_blank" rel="noopener"><i class="bi bi-eye"></i> Xem trước</a>{% endif %}
+  {% if object.status == "published" and object.get_absolute_url %}<a class="btn btn-outline-success btn-sm" href="{{ object.get_absolute_url }}" target="_blank" rel="noopener"><i class="bi bi-globe"></i> Xem trên website</a>{% endif %}
+  {% if can_remove %}<a class="btn btn-outline-danger btn-sm ms-auto" href="{% url url_prefix|add:'_delete' object.pk %}"><i class="bi bi-trash"></i> Xóa</a>{% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card"><div class="card-body">
+      <h2 class="h4">{{ object }}</h2>
+      {% include body_template %}
+    </div></div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card"><div class="card-body">
+      <h2 class="h6">Trạng thái & quy trình duyệt</h2>
+      <p><span class="badge text-bg-{{ object.status_badge }} fs-6">{{ object.get_status_display }}</span></p>
+      <dl class="row small mb-2">
+        <dt class="col-5">Người tạo</dt><dd class="col-7">{{ object.created_by|default:"—" }} · {{ object.created_at|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-5">Người sửa</dt><dd class="col-7">{{ object.updated_by|default:"—" }} · {{ object.updated_at|date:"d/m/Y H:i" }}</dd>
+        <dt class="col-5">Người duyệt</dt><dd class="col-7">{{ object.approved_by|default:"—" }}{% if object.approved_at %} · {{ object.approved_at|date:"d/m/Y H:i" }}{% endif %}</dd>
+        <dt class="col-5">Xuất bản</dt><dd class="col-7">{{ object.published_at|date:"d/m/Y H:i"|default:"—" }}</dd>
+        {% if object.review_note %}<dt class="col-5">Ghi chú duyệt</dt><dd class="col-7">{{ object.review_note }}</dd>{% endif %}
+      </dl>
+      {% for b in blockers %}<div class="alert alert-warning small py-2">{{ b }}</div>{% endfor %}
+      {% if transitions %}
+      <form method="post" class="border-top pt-2" id="wf-form">{% csrf_token %}
+        <label class="form-label small" for="wf-note">Ghi chú (tùy chọn)</label>
+        <input class="form-control form-control-sm mb-2" id="wf-note" name="note" maxlength="500">
+        <div class="d-flex flex-wrap gap-2">
+          {% for t in transitions %}
+          <button class="btn btn-sm btn-{{ t.style }}" type="submit" formaction="{% url 'content:transition' kind object.pk t.name %}">{{ t.label }}</button>
+          {% endfor %}
+        </div>
+      </form>
+      {% else %}<p class="small text-muted mb-0">Không có thao tác chuyển trạng thái phù hợp với quyền của bạn.</p>{% endif %}
+    </div></div>
+    {% block side_extra %}{% endblock %}
+    {% include "includes/history.html" %}
+  </div>
+</div>
+{% endblock %}

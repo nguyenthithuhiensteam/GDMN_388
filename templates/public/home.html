@@ -1,0 +1,97 @@
+{% extends "base_public.html" %}
+{% block content %}
+<section class="hero d-flex align-items-center {% if school.banner %}has-image{% endif %}" {% if school.banner %}style="background-image:url('{{ school.banner.url }}')"{% endif %}>
+  <div class="container py-5">
+    <h1 class="display-6">{{ school.banner_title|default:school.school_name }}</h1>
+    {% if school.banner_text %}<p class="lead col-lg-7">{{ school.banner_text }}</p>{% endif %}
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <a class="btn btn-warning fw-bold" href="{% url 'public:admission' %}">Thông tin tuyển sinh</a>
+      <a class="btn btn-outline-light" href="{% url 'public:about' %}">Giới thiệu nhà trường</a>
+    </div>
+  </div>
+</section>
+{% if urgent %}
+<div class="container mt-3">
+  {% for a in urgent %}<div class="alert alert-danger d-flex gap-2 mb-2" role="alert"><i class="bi bi-exclamation-octagon"></i><a class="alert-link" href="{{ a.get_absolute_url }}">{{ a.title }}</a></div>{% endfor %}
+</div>
+{% endif %}
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <h2 class="section-title h4">Tin tức mới nhất</h2>
+      <div class="row g-3">
+        {% for p in latest_posts %}<div class="col-sm-6">{% include "public/_post_card.html" %}</div>
+        {% empty %}<p class="text-muted">Chưa có tin bài được xuất bản.</p>{% endfor %}
+      </div>
+      {% if latest_posts %}<a class="btn btn-outline-primary mt-3" href="{% url 'public:post_list' %}">Xem tất cả tin tức</a>{% endif %}
+    </div>
+    <aside class="col-lg-4">
+      <h2 class="section-title h4">Thông báo</h2>
+      <div class="list-group mb-4">
+        {% for a in announcements %}
+          <a class="list-group-item list-group-item-action ann-item {% if a.kind == 'urgent' %}urgent{% endif %}" href="{{ a.get_absolute_url }}">
+            <div class="fw-semibold">{% if a.is_pinned %}<i class="bi bi-pin-angle-fill text-danger"></i> {% endif %}{{ a.title }}</div>
+            <small class="text-muted">{{ a.get_kind_display }} · {{ a.start_date|date:"d/m/Y" }}</small>
+          </a>
+        {% empty %}<div class="list-group-item text-muted">Chưa có thông báo.</div>{% endfor %}
+      </div>
+      <a class="small" href="{% url 'public:announcement_list' %}">Tất cả thông báo &raquo;</a>
+      {% if admission or school.admission_text %}
+      <div class="card mt-4 border-warning"><div class="card-body">
+        <h2 class="h5"><i class="bi bi-door-open text-warning"></i> Tuyển sinh</h2>
+        {% if school.admission_text %}<p class="small">{{ school.admission_text|linebreaksbr }}</p>{% endif %}
+        {% if admission %}<a href="{{ admission.get_absolute_url }}">{{ admission.title }}</a>{% endif %}
+      </div></div>
+      {% endif %}
+    </aside>
+  </div>
+</div>
+{% if featured_posts %}
+<section class="bg-white py-4">
+  <div class="container">
+    <h2 class="section-title h4">Hoạt động giáo dục nổi bật</h2>
+    <div class="row g-3">{% for p in featured_posts %}<div class="col-md-4">{% include "public/_post_card.html" %}</div>{% endfor %}</div>
+  </div>
+</section>
+{% endif %}
+<div class="container py-4">
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <h2 class="section-title h4">Giới thiệu</h2>
+      <p>{{ school.intro_text|default:"Nội dung giới thiệu đang được cập nhật."|linebreaksbr }}</p>
+      <a class="btn btn-outline-primary" href="{% url 'public:about' %}">Tìm hiểu thêm</a>
+    </div>
+    <div class="col-lg-6">
+      <h2 class="section-title h4">Chương trình giáo dục</h2>
+      <p>{{ school.program_text|default:"Thông tin chương trình giáo dục đang được cập nhật."|linebreaksbr }}</p>
+      {% if program_page %}<a class="btn btn-outline-primary" href="{{ program_page.get_absolute_url }}">Chi tiết chương trình</a>{% endif %}
+    </div>
+  </div>
+</div>
+{% if albums %}
+<section class="bg-white py-4">
+  <div class="container">
+    <h2 class="section-title h4">Thư viện ảnh</h2>
+    <div class="row g-3">
+      {% for a in albums %}<div class="col-6 col-md-3">
+        <a class="card album-card h-100 text-decoration-none" href="{{ a.get_absolute_url }}">
+          {% with c=a.cover %}{% if c %}<img src="{% url 'public:media' c.pk %}" alt="{{ c.caption|default:a.title }}" loading="lazy" class="w-100">{% else %}<div class="placeholder-img"><i class="bi bi-images"></i></div>{% endif %}{% endwith %}
+          <div class="card-body py-2"><span class="small fw-semibold text-dark">{{ a.title }}</span></div>
+        </a></div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+<div class="container py-4">
+  <h2 class="section-title h4">Liên hệ</h2>
+  <div class="row g-3">
+    <div class="col-md-5">
+      <p><i class="bi bi-geo-alt"></i> {{ school.address|default:"Địa chỉ đang cập nhật" }}</p>
+      {% if school.phone %}<p><i class="bi bi-telephone"></i> {{ school.phone }}</p>{% endif %}
+      {% if school.email %}<p><i class="bi bi-envelope"></i> {{ school.email }}</p>{% endif %}
+      <a class="btn btn-primary" href="{% url 'site:contact' %}">Gửi liên hệ</a>
+    </div>
+    <div class="col-md-7">{% if school.map_embed_url %}<iframe class="map-embed" src="{{ school.map_embed_url }}" title="Bản đồ đường đến trường" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>{% endif %}</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base_public.html" %}
+{% block title %}Giới thiệu · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Giới thiệu nhà trường</h1>
+  {% if school.intro_text %}<p class="lead fs-6">{{ school.intro_text|linebreaksbr }}</p>{% endif %}
+  {% if sections %}
+  <nav class="mb-3" aria-label="Mục lục"><ul class="nav nav-pills flex-wrap">{% for label, pages in sections %}<li class="nav-item"><a class="nav-link" href="#muc-{{ forloop.counter }}">{{ label }}</a></li>{% endfor %}
+    <li class="nav-item"><a class="nav-link" href="{% url 'public:staff' %}">Đội ngũ</a></li></ul></nav>
+  {% endif %}
+  {% for label, pages in sections %}
+  <section id="muc-{{ forloop.counter }}" class="mb-4">
+    <h2 class="h4 text-primary-mn">{{ label }}</h2>
+    {% for p in pages %}<article class="card mb-3"><div class="card-body">
+      {% if pages|length > 1 %}<h3 class="h5">{{ p.title }}</h3>{% endif %}
+      {% if p.image %}<img src="{{ p.image.url }}" alt="" class="img-fluid rounded mb-2">{% endif %}
+      <div class="article-body">{{ p.body|safe }}</div></div></article>{% endfor %}
+  </section>
+  {% empty %}<p class="text-muted">Nội dung giới thiệu đang được cập nhật.</p>{% endfor %}
+  {% if campuses %}
+  <section class="mb-4"><h2 class="h4 text-primary-mn">Các điểm trường</h2>
+    <div class="row g-3">{% for c in campuses %}<div class="col-md-6"><div class="card h-100"><div class="card-body">
+      <h3 class="h6">{{ c.name }}{% if c.is_main %} <span class="badge text-bg-success">Điểm chính</span>{% endif %}</h3>
+      {% if c.address %}<p class="small mb-1"><i class="bi bi-geo-alt"></i> {{ c.address }}</p>{% endif %}
+      {% if c.phone %}<p class="small mb-1"><i class="bi bi-telephone"></i> {{ c.phone }}</p>{% endif %}
+      {% if c.description %}<p class="small mb-0">{{ c.description|linebreaksbr }}</p>{% endif %}
+    </div></div></div>{% endfor %}</div></section>
+  {% endif %}
+</div>
+{% endblock %}

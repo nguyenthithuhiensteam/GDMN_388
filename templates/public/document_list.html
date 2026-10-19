@@ -1,0 +1,22 @@
+{% extends "base_public.html" %}
+{% block title %}Tài liệu · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Tài liệu tải xuống</h1>
+  <form class="row g-2 mb-3" method="get" role="search">
+    <div class="col-md-6"><label class="visually-hidden" for="q">Từ khóa</label><input class="form-control" id="q" name="q" value="{{ q }}" placeholder="Tìm tài liệu..."></div>
+    <div class="col-md-4"><label class="visually-hidden" for="dm">Danh mục</label><select class="form-select" id="dm" name="danh-muc"><option value="">Tất cả</option>
+      {% for k, v in categories %}<option value="{{ k }}" {% if cat == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100" type="submit">Lọc</button></div>
+  </form>
+  <div class="list-group">
+    {% for d in page_obj %}
+    <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div><div class="fw-semibold">{{ d.title }}</div><small class="text-muted">{{ d.get_category_display }} · {{ d.published_at|date:"d/m/Y" }}</small>{% if d.description %}<div class="small">{{ d.description|truncatechars:160 }}</div>{% endif %}</div>
+      <a class="btn btn-sm btn-outline-primary" href="{% url 'public:document_download' d.pk %}"><i class="bi bi-download"></i> Tải xuống</a>
+    </div>
+    {% empty %}<p class="text-muted">Chưa có tài liệu.</p>{% endfor %}
+  </div>
+  {% include "includes/pagination.html" %}
+</div>
+{% endblock %}

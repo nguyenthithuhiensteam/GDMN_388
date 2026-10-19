@@ -1,0 +1,12 @@
+# /etc/systemd/system/mamnon-daily.service — chạy bởi mamnon-daily.timer
+[Unit]
+Description=Tac vu hang ngay: sao luu, nhac viec, don du lieu
+
+[Service]
+Type=oneshot
+User=mamnon
+WorkingDirectory=/srv/mamnon/app
+EnvironmentFile=/srv/mamnon/app/.env
+ExecStart=/srv/mamnon/app/deploy/backup.sh
+ExecStart=/srv/mamnon/venv/bin/python manage.py send_reminders
+ExecStart=/srv/mamnon/venv/bin/python manage.py cleanup_data

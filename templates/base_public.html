@@ -1,0 +1,117 @@
+{% load static %}<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ school.school_name }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ school.slogan|default:school.school_name }}{% endblock %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  {% include "includes/theme_vars.html" %}
+  <link rel="icon" href="{% if school.logo %}{{ school.logo.url }}{% else %}{% static 'img/favicon.svg' %}{% endif %}">
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+{% if preview %}<div class="preview-banner text-center py-2 fw-bold">XEM TRƯỚC – nội dung chưa công khai</div>{% endif %}
+<div class="topbar py-1">
+  <div class="container d-flex flex-wrap justify-content-between gap-2">
+    <div>
+      {% if school.phone %}<span class="me-3"><i class="bi bi-telephone"></i> <a href="tel:{{ school.phone }}">{{ school.phone }}</a></span>{% endif %}
+      {% if school.email %}<span><i class="bi bi-envelope"></i> <a href="mailto:{{ school.email }}">{{ school.email }}</a></span>{% endif %}
+    </div>
+    <div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'core:dashboard' %}"><i class="bi bi-speedometer2"></i> Quản trị</a>
+      {% else %}
+        <a href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right"></i> Đăng nhập cán bộ</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<header class="site-header py-2">
+  <div class="container d-flex align-items-center justify-content-between gap-3">
+    <a class="brand d-flex align-items-center gap-2 text-decoration-none" href="{% url 'public:home' %}">
+      {% if school.logo %}<img src="{{ school.logo.url }}" alt="Logo {{ school.school_name }}">{% else %}<i class="bi bi-flower1 fs-1 text-primary-mn" aria-hidden="true"></i>{% endif %}
+      <span>
+        {% if school.governing_body %}<span class="d-block brand-sub">{{ school.governing_body }}</span>{% endif %}
+        <span class="d-block brand-name fs-5">{{ school.school_name }}</span>
+        {% if school.slogan %}<span class="d-none d-md-block text-muted small">{{ school.slogan }}</span>{% endif %}
+      </span>
+    </a>
+    <form class="d-none d-lg-flex" role="search" action="{% url 'public:search' %}" method="get">
+      <label class="visually-hidden" for="site-search">Tìm kiếm</label>
+      <input id="site-search" class="form-control form-control-sm me-2" type="search" name="q" placeholder="Tìm kiếm..." minlength="2">
+      <button class="btn btn-sm btn-primary" type="submit" aria-label="Tìm"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+</header>
+<nav class="main-nav navbar navbar-expand-lg navbar-dark p-0" aria-label="Điều hướng chính">
+  <div class="container">
+    <button class="navbar-toggler my-2" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Mở menu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      {% with p=request.path %}
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link {% if p == '/' %}active{% endif %}" href="{% url 'public:home' %}">Trang chủ</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle {% if '/gioi-thieu' in p %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Giới thiệu</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'public:about' %}">Giới thiệu chung</a></li>
+            <li><a class="dropdown-item" href="{% url 'public:staff' %}">Đội ngũ</a></li>
+          </ul>
+        </li>
+        <li class="nav-item"><a class="nav-link {% if '/tin-tuc' in p %}active{% endif %}" href="{% url 'public:post_list' %}">Tin tức</a></li>
+        <li class="nav-item"><a class="nav-link {% if '/thong-bao' in p %}active{% endif %}" href="{% url 'public:announcement_list' %}">Thông báo</a></li>
+        <li class="nav-item"><a class="nav-link {% if '/tuyen-sinh' in p %}active{% endif %}" href="{% url 'public:admission' %}">Tuyển sinh</a></li>
+        <li class="nav-item"><a class="nav-link {% if '/cong-khai' in p %}active{% endif %}" href="{% url 'public:disclosure_list' %}">Công khai</a></li>
+        <li class="nav-item"><a class="nav-link {% if '/thu-vien-anh' in p %}active{% endif %}" href="{% url 'public:album_list' %}">Thư viện ảnh</a></li>
+        <li class="nav-item"><a class="nav-link {% if '/tai-lieu' in p %}active{% endif %}" href="{% url 'public:document_list' %}">Tài liệu</a></li>
+        <li class="nav-item"><a class="nav-link {% if '/lien-he' in p %}active{% endif %}" href="{% url 'site:contact' %}">Liên hệ</a></li>
+      </ul>
+      {% endwith %}
+      <form class="d-lg-none pb-3" role="search" action="{% url 'public:search' %}" method="get">
+        <label class="visually-hidden" for="site-search-m">Tìm kiếm</label>
+        <input id="site-search-m" class="form-control" type="search" name="q" placeholder="Tìm kiếm..." minlength="2">
+      </form>
+    </div>
+  </div>
+</nav>
+<main id="main">
+  <div class="container">{% include "includes/messages.html" %}</div>
+  {% block content %}{% endblock %}
+</main>
+<footer class="site-footer mt-5 pt-4 pb-3">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-5">
+        <h2>{{ school.school_name }}</h2>
+        {% if school.address %}<p class="mb-1"><i class="bi bi-geo-alt"></i> {{ school.address }}</p>{% endif %}
+        {% if school.phone %}<p class="mb-1"><i class="bi bi-telephone"></i> {{ school.phone }}</p>{% endif %}
+        {% if school.email %}<p class="mb-1"><i class="bi bi-envelope"></i> {{ school.email }}</p>{% endif %}
+        {% if school.working_hours %}<p class="mb-1"><i class="bi bi-clock"></i> {{ school.working_hours }}</p>{% endif %}
+      </div>
+      <div class="col-6 col-md-3">
+        <h2>Liên kết</h2>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'public:disclosure_list' %}">Công khai giáo dục</a></li>
+          <li><a href="{% url 'public:document_list' %}">Tài liệu tải xuống</a></li>
+          <li><a href="{% url 'public:admission' %}">Tuyển sinh</a></li>
+          <li><a href="{% url 'site:contact' %}">Liên hệ</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-md-4">
+        <h2>Kết nối</h2>
+        {% if school.facebook_url %}<p><a href="{{ school.facebook_url }}" rel="noopener" target="_blank"><i class="bi bi-facebook"></i> Facebook</a></p>{% endif %}
+        {% if school.website_domain %}<p class="small">{{ school.website_domain }}</p>{% endif %}
+      </div>
+    </div>
+    <hr class="border-secondary">
+    <p class="small mb-0 text-center">© {% now "Y" %} {{ school.school_name }}{% if school.footer_note %} · {{ school.footer_note }}{% endif %}</p>
+  </div>
+</footer>
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

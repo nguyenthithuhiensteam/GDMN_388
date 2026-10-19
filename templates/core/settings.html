@@ -1,0 +1,52 @@
+{% extends "base_admin.html" %}
+{% load ui %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-xl-8">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Thông tin trường & giao diện</h2>
+      {% if not can_edit %}<div class="alert alert-info">Bạn chỉ có quyền xem cấu hình.</div>{% endif %}
+      <form method="post" enctype="multipart/form-data" novalidate>{% csrf_token %}
+        <fieldset {% if not can_edit %}disabled{% endif %}>
+          {% include "includes/form_fields.html" %}
+          {% if can_edit %}<button class="btn btn-primary mt-3" type="submit"><i class="bi bi-save"></i> Lưu cấu hình</button>{% endif %}
+        </fieldset>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-xl-4">
+    <div class="card mb-3"><div class="card-body small">
+      <h2 class="h6">Cấu hình máy chủ (chỉ đọc)</h2>
+      <p class="text-muted">Các giá trị này đặt bằng biến môi trường (.env) trên máy chủ, không sửa qua giao diện để tránh lộ bí mật.</p>
+      <dl class="row mb-0">
+        <dt class="col-6">Môi trường</dt><dd class="col-6">{{ system.env }}{% if system.debug %} <span class="badge text-bg-warning">DEBUG</span>{% endif %}</dd>
+        <dt class="col-6">Cơ sở dữ liệu</dt><dd class="col-6">{{ system.database }}</dd>
+        <dt class="col-6">Năm học hiện hành</dt><dd class="col-6">{{ system.current_year|default:"Chưa đặt" }}</dd>
+        <dt class="col-6">Email</dt><dd class="col-6">{{ system.email_backend }}{% if system.email_notifications %} · nhắc việc bật{% endif %}</dd>
+        <dt class="col-6">Tệp tải lên tối đa</dt><dd class="col-6">{{ system.max_upload }} MB</dd>
+        <dt class="col-6">Thư mục sao lưu</dt><dd class="col-6 text-break">{{ system.backup_dir }}</dd>
+        <dt class="col-6">Giữ bản sao lưu</dt><dd class="col-6">{{ system.backup_keep }} bản</dd>
+        <dt class="col-6">AI hỗ trợ</dt><dd class="col-6">{% if system.ai_enabled and system.ai_configured %}Đang bật{% else %}Tắt{% endif %}{% if system.ai_internal %} · cho phép gửi văn bản nội bộ{% endif %}</dd>
+      </dl>
+    </div></div>
+    <div class="card mb-3"><div class="card-body small">
+      <h2 class="h6">Sao lưu gần đây</h2>
+      <ul class="list-unstyled mb-2">
+        {% for b in backups %}<li>{{ b.name }} · {{ b.size|filesize }} · {{ b.mtime|date:"d/m/Y H:i" }}</li>{% empty %}<li class="text-muted">Chưa có bản sao lưu.</li>{% endfor %}
+      </ul>
+      <p class="text-muted mb-0">Sao lưu/khôi phục chạy trên máy chủ: <code>python manage.py backup_data</code>, <code>python manage.py verify_backup &lt;tệp&gt;</code>. Xem docs/TRIEN_KHAI.md.</p>
+    </div></div>
+    <div class="card"><div class="card-body small">
+      <h2 class="h6">Thiết lập khác</h2>
+      <ul class="mb-0">
+        {% if perms_ui.org.view %}<li><a href="{% url 'org:list' 'nam-hoc' %}">Năm học, điểm trường, tổ, lớp</a></li>
+        <li><a href="{% url 'org:list' 'danh-muc' %}">Danh mục chuyên môn</a></li>{% endif %}
+        <li><a href="{% url 'users:permissions' %}">Vai trò và quyền</a></li>
+        {% if perms_ui.disclosure.view %}<li><a href="{% url 'content:section_list' %}">Mục công khai giáo dục</a></li>{% endif %}
+        {% if perms_ui.plan.approve %}<li><a href="{% url 'office:template_list' %}">Mẫu xuất kế hoạch</a></li>{% endif %}
+        {% if perms_ui.news.view %}<li><a href="{% url 'content:category_list' %}">Danh mục tin</a></li>{% endif %}
+      </ul>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

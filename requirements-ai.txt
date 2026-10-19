@@ -1,0 +1,3 @@
+# Tùy chọn: chỉ cài khi bật mô-đun AI hỗ trợ (AI_ENABLED=True)
+-r requirements.txt
+anthropic>=1.0

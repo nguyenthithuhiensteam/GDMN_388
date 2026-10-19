@@ -1,0 +1,8 @@
+{% extends "admin/generic_list.html" %}
+{% block list_actions %}
+<a class="btn btn-outline-secondary" href="{% url 'content:section_list' %}"><i class="bi bi-list-nested"></i> Mục công khai</a>
+<a class="btn btn-outline-secondary" href="{% url 'public:disclosure_list' %}" target="_blank" rel="noopener"><i class="bi bi-globe"></i> Trang công khai</a>
+{% endblock %}
+{% block before_table %}
+<div class="alert alert-light border small">Các mục công khai được cấu hình theo quy định hiện hành mà nhà trường áp dụng. Hệ thống không tự khẳng định nội dung đáp ứng pháp luật: mỗi nội dung cần người có thẩm quyền xác nhận kiểm tra trước khi xuất bản. Dashboard nhắc các nội dung đến hạn rà soát.</div>
+{% endblock %}

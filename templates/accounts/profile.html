@@ -1,0 +1,46 @@
+{% extends "base_admin.html" %}
+{% block title %}Hồ sơ cá nhân{% endblock %}
+{% block content %}
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Hồ sơ cá nhân</h2>
+      <dl class="row small mb-3">
+        <dt class="col-5">Tên đăng nhập</dt><dd class="col-7">{{ user.username }}</dd>
+        <dt class="col-5">Vai trò</dt><dd class="col-7">{{ user.role_label }}</dd>
+        <dt class="col-5">Điểm trường</dt><dd class="col-7">{{ user.campus|default:"—" }}</dd>
+        <dt class="col-5">Tổ chuyên môn</dt><dd class="col-7">{{ user.group|default:"—" }}</dd>
+      </dl>
+      <p class="small text-muted">Vai trò và phạm vi do quản trị hệ thống cấp; người dùng không thể tự thay đổi.</p>
+      <form method="post" novalidate>{% csrf_token %}
+        {% include "includes/form_fields.html" %}
+        <button class="btn btn-primary mt-3" type="submit">Lưu</button>
+        <a class="btn btn-outline-secondary mt-3" href="{% url 'accounts:password_change' %}">Đổi mật khẩu</a>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card"><div class="card-body">
+      <h2 class="h5">Phiên đăng nhập</h2>
+      <div class="table-responsive"><table class="table table-sm">
+        <thead><tr><th>Thiết bị</th><th>IP</th><th>Hoạt động gần nhất</th><th></th></tr></thead>
+        <tbody>
+        {% for s in sessions %}
+          <tr>
+            <td class="small">{{ s.user_agent|truncatechars:50|default:"—" }}{% if s.session_key == current_key %} <span class="badge text-bg-success">Phiên này</span>{% endif %}</td>
+            <td class="small">{{ s.ip_address|default:"—" }}</td>
+            <td class="small">{{ s.last_seen|date:"d/m/Y H:i" }}</td>
+            <td>{% if s.session_key != current_key %}
+              <form method="post" action="{% url 'accounts:revoke_session' s.pk %}" data-confirm="Đăng xuất phiên này?">{% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger" type="submit">Đăng xuất</button></form>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      <form method="post" action="{% url 'accounts:revoke_other_sessions' %}" data-confirm="Đăng xuất tất cả phiên khác?">{% csrf_token %}
+        <button class="btn btn-outline-danger btn-sm" type="submit">Đăng xuất tất cả phiên khác</button>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

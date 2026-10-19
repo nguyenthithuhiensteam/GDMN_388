@@ -1,0 +1,95 @@
+{% load static %}<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}{{ page_title|default:"Quản trị" }} · {{ school.short_name|default:school.school_name }}{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  {% include "includes/theme_vars.html" %}
+  <link rel="icon" href="{% if school.logo %}{{ school.logo.url }}{% else %}{% static 'img/favicon.svg' %}{% endif %}">
+</head>
+<body>
+<a class="skip-link" href="#main">Bỏ qua điều hướng</a>
+<div class="d-flex admin-shell">
+  <nav id="sidebar" class="sidebar p-3" aria-label="Menu quản trị">
+    <a class="brand d-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'core:dashboard' %}">
+      <i class="bi bi-flower1 fs-3 text-warning" aria-hidden="true"></i>
+      <span class="small">{{ school.school_name }}</span>
+    </a>
+    {% with p=request.path %}
+    <ul class="nav flex-column">
+      <li><a class="nav-link {% if p == '/quan-tri/' %}active{% endif %}" href="{% url 'core:dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Tổng quan</a></li>
+      <li><a class="nav-link {% if '/nhac-viec' in p %}active{% endif %}" href="{% url 'core:notifications' %}"><i class="bi bi-bell me-2"></i>Nhắc việc{% if unread_notifications %} <span class="badge text-bg-warning">{{ unread_notifications }}</span>{% endif %}</a></li>
+
+      {% if perms_ui.news.view or perms_ui.announcement.view or perms_ui.page.view or perms_ui.album.view or perms_ui.public_document.view or perms_ui.disclosure.view %}
+      <li class="nav-section">Website</li>
+      {% if perms_ui.news.view %}<li><a class="nav-link {% if '/noi-dung/tin-tuc' in p %}active{% endif %}" href="{% url 'content:news_list' %}"><i class="bi bi-newspaper me-2"></i>Tin tức</a></li>{% endif %}
+      {% if perms_ui.announcement.view %}<li><a class="nav-link {% if '/noi-dung/thong-bao' in p %}active{% endif %}" href="{% url 'content:announcement_list' %}"><i class="bi bi-megaphone me-2"></i>Thông báo</a></li>{% endif %}
+      {% if perms_ui.page.view %}<li><a class="nav-link {% if '/noi-dung/trang' in p %}active{% endif %}" href="{% url 'content:page_list' %}"><i class="bi bi-file-richtext me-2"></i>Trang giới thiệu</a></li>{% endif %}
+      {% if perms_ui.staff_profile.view %}<li><a class="nav-link {% if '/noi-dung/doi-ngu' in p %}active{% endif %}" href="{% url 'content:staff_list' %}"><i class="bi bi-person-badge me-2"></i>Đội ngũ</a></li>{% endif %}
+      {% if perms_ui.album.view %}<li><a class="nav-link {% if '/noi-dung/album' in p %}active{% endif %}" href="{% url 'content:album_list' %}"><i class="bi bi-images me-2"></i>Thư viện ảnh/video</a></li>{% endif %}
+      {% if perms_ui.public_document.view %}<li><a class="nav-link {% if '/noi-dung/tai-lieu' in p %}active{% endif %}" href="{% url 'content:pubdoc_list' %}"><i class="bi bi-download me-2"></i>Tài liệu tải xuống</a></li>{% endif %}
+      {% if perms_ui.disclosure.view %}<li><a class="nav-link {% if '/noi-dung/cong-khai' in p or '/muc-cong-khai' in p %}active{% endif %}" href="{% url 'content:disclosure_list' %}"><i class="bi bi-clipboard-check me-2"></i>Công khai giáo dục</a></li>{% endif %}
+      {% if perms_ui.contact.view %}<li><a class="nav-link {% if '/quan-tri/lien-he' in p %}active{% endif %}" href="{% url 'core:contact_list' %}"><i class="bi bi-chat-dots me-2"></i>Liên hệ</a></li>{% endif %}
+      {% endif %}
+
+      <li class="nav-section">Nghiệp vụ</li>
+      {% if perms_ui.official_doc.view %}<li><a class="nav-link {% if '/van-ban' in p %}active{% endif %}" href="{% url 'office:doc_list' %}"><i class="bi bi-folder2-open me-2"></i>Văn bản</a></li>{% endif %}
+      {% if perms_ui.plan.view %}<li><a class="nav-link {% if '/ke-hoach' in p %}active{% endif %}" href="{% url 'office:plan_list' %}"><i class="bi bi-journal-text me-2"></i>Kế hoạch giáo dục</a></li>{% endif %}
+      {% if perms_ui.task.view %}<li><a class="nav-link {% if '/nhiem-vu' in p %}active{% endif %}" href="{% url 'office:task_list' %}"><i class="bi bi-list-check me-2"></i>Nhiệm vụ</a></li>{% endif %}
+      {% if perms_ui.evidence.view %}<li><a class="nav-link {% if 'minh-chung' in p %}active{% endif %}" href="{% url 'office:evidence_list' %}"><i class="bi bi-archive me-2"></i>Minh chứng</a></li>{% endif %}
+      {% if perms_ui.report.view %}<li><a class="nav-link {% if '/bao-cao' in p %}active{% endif %}" href="{% url 'reports:index' %}"><i class="bi bi-bar-chart me-2"></i>Báo cáo, thống kê</a></li>{% endif %}
+      <li><a class="nav-link {% if '/ai/tim-kiem' in p %}active{% endif %}" href="{% url 'ai:search' %}"><i class="bi bi-search me-2"></i>Tìm tài liệu nội bộ</a></li>
+      {% if perms_ui.ai.use %}<li><a class="nav-link {% if '/quan-tri/ai/' in p and '/tim-kiem' not in p %}active{% endif %}" href="{% url 'ai:index' %}"><i class="bi bi-stars me-2"></i>AI hỗ trợ</a></li>{% endif %}
+
+      {% if perms_ui.user.view or perms_ui.org.view or perms_ui.settings.view or perms_ui.audit.view %}
+      <li class="nav-section">Hệ thống</li>
+      {% if perms_ui.user.view %}<li><a class="nav-link {% if '/quan-tri/tai-khoan/' in p and 'phan-quyen' not in p %}active{% endif %}" href="{% url 'users:user_list' %}"><i class="bi bi-people me-2"></i>Tài khoản</a></li>{% endif %}
+      {% if perms_ui.settings.view %}<li><a class="nav-link {% if 'phan-quyen' in p %}active{% endif %}" href="{% url 'users:permissions' %}"><i class="bi bi-shield-lock me-2"></i>Phân quyền</a></li>{% endif %}
+      {% if perms_ui.org.view %}<li><a class="nav-link {% if '/to-chuc' in p %}active{% endif %}" href="{% url 'org:list' 'nam-hoc' %}"><i class="bi bi-diagram-3 me-2"></i>Cơ cấu tổ chức</a></li>{% endif %}
+      {% if perms_ui.settings.view %}<li><a class="nav-link {% if '/cau-hinh' in p %}active{% endif %}" href="{% url 'core:settings' %}"><i class="bi bi-gear me-2"></i>Cấu hình</a></li>{% endif %}
+      {% if perms_ui.audit.view %}<li><a class="nav-link {% if '/nhat-ky' in p %}active{% endif %}" href="{% url 'core:audit' %}"><i class="bi bi-clock-history me-2"></i>Nhật ký</a></li>{% endif %}
+      {% endif %}
+    </ul>
+    {% endwith %}
+  </nav>
+  <div class="flex-grow-1 d-flex flex-column" style="min-width:0">
+    {% if school.demo_data_loaded %}<div class="demo-banner px-3 py-1 small"><i class="bi bi-exclamation-triangle"></i> Hệ thống đang chứa <strong>DỮ LIỆU MẪU</strong> (đánh dấu [MẪU]). Không sử dụng như dữ liệu thật; xóa bằng lệnh <code>python manage.py seed_demo --remove</code>.</div>{% endif %}
+    <header class="admin-topbar d-flex align-items-center justify-content-between px-3 py-2 gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <button id="sidebarToggle" class="btn btn-outline-secondary btn-sm d-lg-none" type="button" aria-controls="sidebar" aria-expanded="false" aria-label="Mở menu"><i class="bi bi-list"></i></button>
+        <h1 class="h5 mb-0">{{ page_title|default:"Quản trị" }}</h1>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <a class="btn btn-sm btn-outline-secondary d-none d-sm-inline-block" href="{% url 'public:home' %}" target="_blank" rel="noopener"><i class="bi bi-globe"></i> Website</a>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle"></i> <span class="d-none d-sm-inline">{{ user.get_full_name }}</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><span class="dropdown-item-text small text-muted">{{ user.role_label }}</span></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Hồ sơ & phiên đăng nhập</a></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">Đổi mật khẩu</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}
+                <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+              </form>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+    <main id="main" class="p-3 p-md-4">
+      {% include "includes/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{% extends "base_public.html" %}
+{% block title %}Tuyển sinh · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Tuyển sinh</h1>
+  {% if school.admission_text %}<div class="card mb-3"><div class="card-body">{{ school.admission_text|linebreaksbr }}</div></div>{% endif %}
+  {% for p in pages %}<article class="mb-4"><h2 class="h4">{{ p.title }}</h2><div class="article-body">{{ p.body|safe }}</div></article>{% endfor %}
+  <h2 class="h5 mt-4">Thông báo tuyển sinh</h2>
+  <ul>{% for a in announcements %}<li><a href="{{ a.get_absolute_url }}">{{ a.title }}</a> <small class="text-muted">({{ a.start_date|date:"d/m/Y" }})</small></li>{% empty %}<li class="text-muted">Chưa có thông báo tuyển sinh.</li>{% endfor %}</ul>
+  <a class="btn btn-primary mt-2" href="{% url 'site:contact' %}">Liên hệ tư vấn</a>
+</div>
+{% endblock %}

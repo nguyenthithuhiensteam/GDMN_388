@@ -1,0 +1,5 @@
+{% extends "admin/generic_list.html" %}
+{% block list_actions %}
+<a class="btn btn-outline-secondary" href="{% url 'office:evcat_list' %}"><i class="bi bi-list-nested"></i> Danh mục minh chứng</a>
+{% if can_export %}<a class="btn btn-outline-success" href="{% url 'office:evidence_export' %}?{{ querystring }}"><i class="bi bi-file-earmark-excel"></i> Xuất danh mục</a>{% endif %}
+{% endblock %}

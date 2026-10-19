@@ -1,0 +1,29 @@
+{% extends "base_admin.html" %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'office:doc_list' %}"><i class="bi bi-arrow-left"></i> Danh sách</a>
+  {% if can_modify %}<a class="btn btn-outline-primary btn-sm" href="{% url 'office:doc_edit' object.pk %}"><i class="bi bi-pencil"></i> Sửa</a>{% endif %}
+  {% if perms_ui.ai.use %}<a class="btn btn-outline-info btn-sm" href="{% url 'ai:summarize' %}?van_ban={{ object.pk }}"><i class="bi bi-stars"></i> Tóm tắt bằng AI</a>{% endif %}
+  {% if can_delete and can_modify %}<a class="btn btn-outline-danger btn-sm ms-auto" href="{% url 'office:doc_delete' object.pk %}"><i class="bi bi-trash"></i> Xóa</a>{% endif %}
+</div>
+<div class="row g-3">
+  <div class="col-lg-8"><div class="card"><div class="card-body">
+    <h2 class="h5">{{ object.summary }}</h2>
+    <dl class="row small">
+      <dt class="col-sm-4">Loại sổ</dt><dd class="col-sm-8">{{ object.get_direction_display }}</dd>
+      <dt class="col-sm-4">Số / Ký hiệu</dt><dd class="col-sm-8">{{ object.number }}{% if object.symbol %}/{{ object.symbol }}{% endif %}</dd>
+      <dt class="col-sm-4">Ngày ban hành</dt><dd class="col-sm-8">{{ object.issue_date|date:"d/m/Y" }}</dd>
+      <dt class="col-sm-4">Cơ quan ban hành</dt><dd class="col-sm-8">{{ object.issuer_name|default:"—" }}</dd>
+      <dt class="col-sm-4">Loại văn bản</dt><dd class="col-sm-8">{{ object.doc_type|default:"—" }}</dd>
+      <dt class="col-sm-4">Lĩnh vực</dt><dd class="col-sm-8">{{ object.field|default:"—" }}</dd>
+      <dt class="col-sm-4">Người phụ trách</dt><dd class="col-sm-8">{{ object.responsible|default:"—" }}</dd>
+      <dt class="col-sm-4">Trạng thái xử lý</dt><dd class="col-sm-8">{{ object.get_processing_status_display }}{% if object.is_overdue %} <span class="badge text-bg-danger">Quá hạn</span>{% endif %}</dd>
+      <dt class="col-sm-4">Hạn xử lý</dt><dd class="col-sm-8">{{ object.deadline|date:"d/m/Y"|default:"—" }}</dd>
+      <dt class="col-sm-4">Phạm vi truy cập</dt><dd class="col-sm-8">{{ object.get_access_level_display }}</dd>
+    </dl>
+    {% if object.content_text %}<h3 class="h6">Nội dung chính</h3><p style="white-space:pre-wrap">{{ object.content_text }}</p>{% endif %}
+    {% if object.file %}{% if can_download %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'office:doc_download' object.pk %}"><i class="bi bi-download"></i> Tải tệp đính kèm</a>{% else %}<p class="small text-muted">Bạn không có quyền tải tệp.</p>{% endif %}{% endif %}
+  </div></div></div>
+  <div class="col-lg-4">{% include "includes/history.html" %}</div>
+</div>
+{% endblock %}

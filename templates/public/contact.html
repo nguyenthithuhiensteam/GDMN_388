@@ -1,0 +1,36 @@
+{% extends "base_public.html" %}
+{% block title %}Liên hệ · {{ school.school_name }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h1 class="section-title h3">Liên hệ</h1>
+  <div class="row g-4">
+    <div class="col-lg-5">
+      <p><i class="bi bi-building"></i> <strong>{{ school.school_name }}</strong></p>
+      {% if school.address %}<p><i class="bi bi-geo-alt"></i> {{ school.address }}</p>{% endif %}
+      {% if school.phone %}<p><i class="bi bi-telephone"></i> <a href="tel:{{ school.phone }}">{{ school.phone }}</a></p>{% endif %}
+      {% if school.email %}<p><i class="bi bi-envelope"></i> <a href="mailto:{{ school.email }}">{{ school.email }}</a></p>{% endif %}
+      {% if school.working_hours %}<p><i class="bi bi-clock"></i> {{ school.working_hours }}</p>{% endif %}
+      {% if school.map_embed_url %}<iframe class="map-embed" src="{{ school.map_embed_url }}" title="Bản đồ" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>{% endif %}
+    </div>
+    <div class="col-lg-7"><div class="card"><div class="card-body">
+      <h2 class="h5">Gửi liên hệ tới nhà trường</h2>
+      <p class="small text-muted">Vui lòng không gửi thông tin sức khỏe hoặc thông tin nhạy cảm của trẻ qua biểu mẫu này.</p>
+      <form method="post" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{% for e in form.non_field_errors %}{{ e }} {% endfor %}</div>{% endif %}
+        {{ form.ts }}
+        <div class="honeypot" aria-hidden="true"><label for="{{ form.website.id_for_label }}">Để trống</label>{{ form.website }}</div>
+        <div class="row g-3">
+          {% for field in form %}{% if field.name != "website" and field.name != "ts" and field.name != "agree" %}
+          <div class="{% if field.name == 'message' or field.name == 'subject' %}col-12{% else %}col-md-4{% endif %}">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}</label>{{ field }}
+            {% for e in field.errors %}<div class="errorlist">{{ e }}</div>{% endfor %}
+          </div>{% endif %}{% endfor %}
+          <div class="col-12"><div class="form-check">{{ form.agree }}<label class="form-check-label" for="{{ form.agree.id_for_label }}">{{ form.agree.label }}</label></div>
+            {% for e in form.agree.errors %}<div class="errorlist">{{ e }}</div>{% endfor %}</div>
+        </div>
+        <button class="btn btn-primary mt-3" type="submit"><i class="bi bi-send"></i> Gửi</button>
+      </form>
+    </div></div></div>
+  </div>
+</div>
+{% endblock %}
